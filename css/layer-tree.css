@@ -1,7 +1,25 @@
 /* jquery ui required */
 .ui-sortable-handle{
-    -ms-touch-action:none;
-    touch-action:none;
+    -ms-touch-action: none;
+    touch-action: none;
 }
 
+.mapboxgl-ctrl.legend-container {
+    width: auto;
+    height: auto;
+    pointer-events: none;
+    margin: 0;
+    float: none;
+}
 
+.layer-directory .directory-name {
+    font-size: 18px;
+    font-weight: 500;
+    padding: 5px;
+}
+
+.layer-directory .layer-item {
+    font-size: 15px;
+    font-weight: 400;
+    padding: 2px;
+}

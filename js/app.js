@@ -37,10 +37,16 @@ map.on('load', function () {
 
 var layers =
 [
-    'Neighborhood',
-    'City Boundaries'
+    {
+        'source': 'Neighborhood',
+        'directory': 'Environment'
+    },
+    {
+        'source': 'City Boundaries',
+        'directory': 'Environment'
+    }
 ];
 
 // Add zoom and rotation controls to the map.
 map.addControl(new mapboxgl.NavigationControl());
-map.addControl(new LayerTree({layers: layers}), 'bottom-right');
+map.addControl(new LayerTree({layers: layers}), 'bottom-left');
