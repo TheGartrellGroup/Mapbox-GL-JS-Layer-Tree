@@ -15,7 +15,7 @@ gulp.task('webserver', function() {
 
 //watch task
 gulp.task('watch', function(){
-  gulp.watch(['index.htm', 'js/app.js', 'js/layer-tree.js', 'css/app.css']);
+  gulp.watch(['index.htm', 'js/app.js', 'js/layer-tree.js', 'css/app.css', 'css/layer-tree.css']);
 });
 
 //default task
