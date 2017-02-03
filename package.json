@@ -1,0 +1,15 @@
+{
+  "name": "Port-Layer-Tree",
+  "version": "1.0.0",
+  "description": "Allow users to interactively organize and reposition different map layers",
+  "repository": "https://github.com/TheGartrellGroup/Port-Layer-Tree.git",
+  "author": "The Gartrell Group",
+  "license": "MIT",
+  "dependencies": {
+    "bootstrap": "^3.3.7",
+    "gulp": "^3.9.1",
+    "gulp-webserver": "^0.9.1",
+    "jquery": "2.2.4",
+    "mapbox-gl": "^0.32.1"
+  }
+}

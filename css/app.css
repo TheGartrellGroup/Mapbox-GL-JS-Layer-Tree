@@ -1,0 +1,16 @@
+body {
+    margin:0; padding:0;
+}
+
+#map {
+    position:absolute;
+    top:0;
+    bottom:0;
+    width:100%;
+}
+
+/*jquery ui style*/
+.ui-sortable-handle{
+    -ms-touch-action:none;
+    touch-action:none;
+}
