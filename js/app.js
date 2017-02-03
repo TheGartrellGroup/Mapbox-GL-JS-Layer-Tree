@@ -43,7 +43,7 @@ var layers =
     },
     {
         'source': 'City Boundaries',
-        'directory': 'Environment'
+        'directory': 'Construction'
     }
 ];
 

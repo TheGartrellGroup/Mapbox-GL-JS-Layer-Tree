@@ -7,7 +7,7 @@
 .mapboxgl-ctrl.legend-container {
     width: auto;
     height: auto;
-    pointer-events: none;
+    pointer-events: auto;
     margin: 0;
     float: none;
 }
@@ -21,5 +21,19 @@
 .layer-directory .layer-item {
     font-size: 15px;
     font-weight: 400;
-    padding: 2px;
+    padding: 2px 6px 2px 15px;
+}
+
+/* .grb is class for all sortable components */
+.grb {
+    cursor: move; /* fallback if grab cursor is unsupported */
+    cursor: grab;
+    cursor: -moz-grab;
+    cursor: -webkit-grab;
+}
+
+.grb:active {
+    cursor: grabbing;
+    cursor: -moz-grabbing;
+    cursor: -webkit-grabbing;
 }
