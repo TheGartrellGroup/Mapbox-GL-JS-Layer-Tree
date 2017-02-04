@@ -24,6 +24,10 @@
     padding: 2px 6px 2px 15px;
 }
 
+.layer-item input {
+    margin-right: 5px;
+}
+
 /* .grb is class for all sortable components */
 .grb {
     cursor: move; /* fallback if grab cursor is unsupported */
