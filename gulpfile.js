@@ -1,6 +1,5 @@
 var gulp      = require('gulp');
 var webserver = require('gulp-webserver');
-var requireOptimize = require('gulp-requirejs-optimize');
 
 //local webserver
 gulp.task('webserver', function() {

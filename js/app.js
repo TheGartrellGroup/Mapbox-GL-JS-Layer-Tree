@@ -8,13 +8,14 @@ var map = new mapboxgl.Map({
 });
 
 map.on('load', function () {
-    map.addSource('Neighborhood', { type: 'geojson', data: 'http://gis.pdx.opendata.arcgis.com/datasets/c11815647b3949faa20b16cf50ab214d_125.geojson' });
+
+    map.addSource('neighborhood', { type: 'geojson', data: 'http://gis.pdx.opendata.arcgis.com/datasets/c11815647b3949faa20b16cf50ab214d_125.geojson' });
     map.addLayer({
-        "id": "Neighborhood",
+        "id": "neighborhood",
         "type": "fill",
-        "source": "Neighborhood",
+        "source": "neighborhood",
         "layout": {
-            "visibility": 'none'
+            "visibility": 'visible'
         },
         "paint": {
             'fill-color': '#088',
@@ -22,11 +23,11 @@ map.on('load', function () {
         }
     });
 
-    map.addSource('City Boundaries', { type: 'geojson', data: 'http://gis.pdx.opendata.arcgis.com/datasets/470aa3de09244de4a3a94150b86a648b_10.geojson' });
+    map.addSource('city-boundaries', { type: 'geojson', data: 'http://gis.pdx.opendata.arcgis.com/datasets/470aa3de09244de4a3a94150b86a648b_10.geojson' });
     map.addLayer({
-        "id": "City Boundaries",
+        "id": "city-boundaries",
         "type": "fill",
-        "source": "City Boundaries",
+        "source": "city-boundaries",
         "layout": {
             "visibility": 'visible'
         },
@@ -35,20 +36,24 @@ map.on('load', function () {
             'fill-opacity': 0.8
         }
     });
+
 });
 
 var layers =
 [
     {
-        'source': 'Neighborhood',
+        'name': 'City Boundaries',
+        'source': 'city-boundaries',
         'directory': 'Environment',
         'select': 'checkbox',
     },
     {
-        'source': 'City Boundaries',
-        'directory': 'Construction',
+        'name': 'Neighborhood',
+        'source': 'neighborhood',
+        'directory': 'Environment',
         'select': 'checkbox',
     }
+
 ];
 
 // Add zoom and rotation controls to the map.

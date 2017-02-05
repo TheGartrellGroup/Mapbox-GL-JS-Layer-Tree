@@ -62,8 +62,8 @@ LayerTree.prototype.appendLayerToLegend = function(map, mapLyrObj, lyr) {
     var directoryName = lyr.directory;
     var directoryId = directoryName.replace(/\s+/g, '-').toLowerCase()
 
-    var layerName = lyr.source;
-    var layerId = layerName.replace(/\s+/g, '-').toLowerCase();
+    var layerName = lyr.name;
+    var layerId = lyr.source;
     var layerType = lyr.select.toLowerCase();
     var layerDiv = "<div id='" + layerId + "' class='layer-item grb'><input class='toggle-layer' type='" + layerType + "' >"+ layerName + "</div>";
 
@@ -77,8 +77,66 @@ LayerTree.prototype.appendLayerToLegend = function(map, mapLyrObj, lyr) {
 
 //callback to activate jquery-ui-sortable
 LayerTree.prototype.enableSortHandler = function(map) {
+    //sortable directories
     $('#mapboxgl-legend').sortable({
-        items: '.layer-directory'
+        items: '.layer-directory',
+        change: function(e, ui) {
+          console.log(e, ui);
+        }
+    });
+
+    //sortable layers in a directory
+    $('.layer-directory').sortable({
+        items: '.layer-item',
+        stop: function(e, ui) {
+            /**
+            IMPORTANT: mapbox-gl ordering is dictated by
+            bottom-most layers appearing the highest on map!
+
+            Ex. layers = [ 'foo', 'bar']
+            'bar' is going to show on top of 'foo'
+            **/
+
+            var orderArray = [];
+            var newLayerOrder = ui.item.parent().sortable('toArray').reverse();
+
+            for (var i = newLayerOrder.length - 1; i >= 0; i--) {
+                var layers = map.getStyle().layers;
+                var layerIndex = findLayerIndex(layers, newLayerOrder, i);
+
+                if (layerIndex) {
+                    var obj = {
+                        'originalOrder': layerIndex,
+                        'newOrder': i,
+                        'source': newLayerOrder[i],
+
+                    }
+                    orderArray.push(obj);
+                }
+
+            };
+
+            //find layer index location
+            function findLayerIndex(layers, newOrder, newOrderVal) {
+                var index = -1;
+                for (var i = layers.length - 1; i >= 0; i--) {
+                    if (layers[i].source === newOrder[newOrderVal]) {
+                        index = i;
+                        break
+                    }
+                };
+                return index;
+            }
+
+            //move layer order
+            orderArray.sort(function (a,b) {
+                if (b.newOrder > a.originalOrder) {
+                    map.moveLayer(a.source, b.source);
+                } else  {
+                    map.moveLayer(b.source, a.source);
+                }
+            })
+        }
     });
 }
 
@@ -93,7 +151,7 @@ LayerTree.prototype.loadComplete = function(map, collection) {
             for (var i = collection.length - 1; i >= 0; i--) {
                 var visibility = map.getLayoutProperty(collection[i].id, 'visibility');
                 if (visibility === 'visible') {
-                    var lyrId = "#" + collection[i].id.replace(/\s+/g, '-').toLowerCase();
+                    var lyrId = "#" + collection[i].id;
                     $(lyrId + ' input').prop("checked", true );
                 }
             }
@@ -106,7 +164,7 @@ LayerTree.prototype.loadComplete = function(map, collection) {
 $(document).ready(function() {
     $('body').on('click', '.toggle-layer', function() {
         var elmId = $(this).parent().attr('id');
-        var lyrId = elmId.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        var lyrId = elmId;
 
         if ($(this).is(':checked')) {
             map.setLayoutProperty(lyrId, 'visibility', 'visible');
