@@ -1,46 +1,42 @@
 'use strict';
-
 //@implements {IControl}
-class LayerTree {
-
-    //@param {Object} [options]
-    constructor(options) {
-        this.options = options;
-        this.collection = [];
-    }
-
-    onAdd(map) {
-        this._map = map;
-        this._container = document.createElement('div');
-        this._container.className = 'mapboxgl-ctrl mapboxgl-ctrl-group';
-
-        //layer manager bounding box
-        var layerBox = document.createElement('div');
-        layerBox.className = 'mapboxgl-ctrl legend-container';
-
-        //legend ui
-        var legendDiv = document.createElement('div');
-        legendDiv.id = 'mapboxgl-legend';
-
-        layerBox.appendChild(legendDiv);
-        this._container.appendChild(layerBox);
-
-        this.getLayers(this._map, this.options.layers, this.collection, this.appendLayerToLegend, this.enableSortHandler, this.loadComplete);
-        return this._container;
-    }
-
-    onRemove() {
-        this._container.parentNode.removeChild(this._container);
-        this._map = undefined;
-    }
-
+function LayerTree(options) {
+    this.options = options;
+    this.collection = [];
 }
+
+
+LayerTree.prototype.onAdd = function(map) {
+    this._map = map;
+    this._container = document.createElement('div');
+    this._container.className = 'mapboxgl-ctrl mapboxgl-ctrl-group';
+
+    //layer manager bounding box
+    var layerBox = document.createElement('div');
+    layerBox.className = 'mapboxgl-ctrl legend-container';
+
+    //legend ui
+    var legendDiv = document.createElement('div');
+    legendDiv.id = 'mapboxgl-legend';
+
+    layerBox.appendChild(legendDiv);
+    this._container.appendChild(layerBox);
+
+    this.getLayers(this._map, this.options.layers, this.collection, this.appendLayerToLegend, this.enableSortHandler, this.loadComplete);
+    return this._container;
+}
+
+LayerTree.prototype.onRemove = function() {
+    this._container.parentNode.removeChild(this._container);
+    this._map = undefined;
+}
+
 
 //get layers once they start loading
 LayerTree.prototype.getLayers = function(map, layers, collection, appendLegend, sortHandler, loadComplete) {
     map.on('sourcedataloading', function(e) {
-        var lyr = layers.filter(function( layer ) {
-          return layer.source === e.sourceId;
+        var lyr = layers.filter(function(layer) {
+            return layer.source === e.sourceId;
         });
 
         if (lyr[0]) {
@@ -65,13 +61,13 @@ LayerTree.prototype.appendLayerToLegend = function(map, mapLyrObj, lyr) {
     var layerName = lyr.name;
     var layerId = lyr.source;
     var layerType = lyr.select.toLowerCase();
-    var layerDiv = "<div id='" + layerId + "' class='layer-item grb'><input class='toggle-layer' type='" + layerType + "' >"+ layerName + "</div>";
+    var layerDiv = "<div id='" + layerId + "' class='layer-item grb'><input class='toggle-layer' type='" + layerType + "' >" + layerName + "</div>";
 
-    if ($('#'+directoryId).length) {
-        $('#'+directoryId).append(layerDiv);
+    if ($('#' + directoryId).length) {
+        $('#' + directoryId).append(layerDiv);
     } else {
-        $(legendId).append("<div id='"+ directoryId + "' class='layer-directory grb'><div class='directory-name'>" + directoryName + "</div></div>")
-        $('#'+directoryId).append(layerDiv);
+        $(legendId).append("<div id='" + directoryId + "' class='layer-directory grb'><div class='directory-name'>" + directoryName + "</div></div>")
+        $('#' + directoryId).append(layerDiv);
     }
 }
 
@@ -81,7 +77,7 @@ LayerTree.prototype.enableSortHandler = function(map) {
     $('#mapboxgl-legend').sortable({
         items: '.layer-directory',
         change: function(e, ui) {
-          console.log(e, ui);
+            console.log(e, ui);
         }
     });
 
@@ -99,9 +95,9 @@ LayerTree.prototype.enableSortHandler = function(map) {
 
             var orderArray = [];
             var newLayerOrder = ui.item.parent().sortable('toArray').reverse();
+            var layers = map.getStyle().layers;
 
             for (var i = newLayerOrder.length - 1; i >= 0; i--) {
-                var layers = map.getStyle().layers;
                 var layerIndex = findLayerIndex(layers, newLayerOrder, i);
 
                 if (layerIndex) {
@@ -116,23 +112,11 @@ LayerTree.prototype.enableSortHandler = function(map) {
 
             };
 
-            //find layer index location
-            function findLayerIndex(layers, newOrder, newOrderVal) {
-                var index = -1;
-                for (var i = layers.length - 1; i >= 0; i--) {
-                    if (layers[i].source === newOrder[newOrderVal]) {
-                        index = i;
-                        break
-                    }
-                };
-                return index;
-            }
-
             //move layer order
-            orderArray.sort(function (a,b) {
+            orderArray.sort(function(a, b) {
                 if (b.newOrder > a.originalOrder) {
                     map.moveLayer(a.source, b.source);
-                } else  {
+                } else {
                     map.moveLayer(b.source, a.source);
                 }
             })
@@ -147,19 +131,60 @@ LayerTree.prototype.loadComplete = function(map, collection) {
 
     function mapLoaded() {
         if (map.loaded()) {
-            //if layer is initially visible, activate checkbox
+            var layers = map.getStyle().layers;
+            var arrayObj = [];
+
+            //update legend once layers are fully loaded
             for (var i = collection.length - 1; i >= 0; i--) {
-                var visibility = map.getLayoutProperty(collection[i].id, 'visibility');
+                var id = collection[i].id;
+                var lyrElm = '#' + id;
+                var dir = $(lyrElm).parent('.layer-directory');
+                var lyrArray = dir.children('.layer-item');
+
+                var layerIndex = findLayerIndex(layers, collection, i);
+                $(lyrElm).attr('initial-index', layerIndex);
+
+                //sort legends based on initial on layer index
+                lyrArray.sort(function(a, b) {
+                    var aVal = parseInt(a.getAttribute('initial-index')),
+                        bVal = parseInt(b.getAttribute('initial-index'));
+                    return bVal - aVal;
+                });
+
+                lyrArray.detach().appendTo(dir);
+
+                //activate checkbox if layer is visible
+                var visibility = map.getLayoutProperty(id, 'visibility');
                 if (visibility === 'visible') {
-                    var lyrId = "#" + collection[i].id;
-                    $(lyrId + ' input').prop("checked", true );
+                    $(lyrElm + ' input').prop("checked", true);
                 }
             }
+
+            $('.mapboxgl-ctrl.legend-container').show();
             map.off('render', mapLoaded)
         }
     }
 }
 
+//find layer index location
+function findLayerIndex(layers, array, indexVal) {
+    var index = -1;
+    for (var i = layers.length - 1; i >= 0; i--) {
+        if (typeof array[indexVal] === 'object' && array[indexVal] !== null) {
+            if (layers[i].id === array[indexVal].id) {
+                index = i;
+                break
+            }
+        } else {
+            if (layers[i].id === array[indexVal]) {
+                index = i;
+                break
+            }
+        }
+
+    };
+    return index;
+}
 
 $(document).ready(function() {
     $('body').on('click', '.toggle-layer', function() {
@@ -173,5 +198,3 @@ $(document).ready(function() {
         }
     })
 });
-
-

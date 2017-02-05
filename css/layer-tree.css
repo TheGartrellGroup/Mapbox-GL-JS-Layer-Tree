@@ -5,6 +5,7 @@
 }
 
 .mapboxgl-ctrl.legend-container {
+    display: none;
     width: auto;
     height: auto;
     pointer-events: auto;

@@ -37,6 +37,20 @@ map.on('load', function () {
         }
     });
 
+    map.addSource('bikes', { type: 'geojson', data: 'http://gis.pdx.opendata.arcgis.com/datasets/470aa3de09244de4a3a94150b86a648b_10.geojson' });
+    map.addLayer({
+        "id": "bikes",
+        "type": "circle",
+        "source": "bikes",
+        "layout": {
+            "visibility": 'visible'
+        },
+        "paint": {
+            "circle-radius": 5,
+            "circle-color": "#d4d437"
+        }
+    });
+
 });
 
 var layers =
@@ -44,6 +58,12 @@ var layers =
     {
         'name': 'City Boundaries',
         'source': 'city-boundaries',
+        'directory': 'Environment',
+        'select': 'checkbox',
+    },
+    {
+        'name': 'Bikes',
+        'source': 'bikes',
         'directory': 'Environment',
         'select': 'checkbox',
     },
