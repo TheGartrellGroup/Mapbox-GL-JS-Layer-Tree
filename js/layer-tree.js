@@ -107,7 +107,7 @@ LayerTree.prototype.updateLegend = function(map, collection, lyrs) {
     //activate checkbox if layer is visible
     function visible(map) {
         var visibility = map.getLayoutProperty(id, 'visibility');
-        if (visibility === 'visible') {
+        if (visibility !== 'none') {
             $(lyrElm + ' input').prop("checked", true);
         }
     }
@@ -118,15 +118,30 @@ LayerTree.prototype.updateLegend = function(map, collection, lyrs) {
             return id === i.source;
         });
 
-        if (collectionObj.length && !collectionObj[0].hasOwnProperty('icon')) {
+        if (collectionObj.length) {
             var mapLayer = map.getLayer(id);
             var mapSource = map.getSource(id);
-            if (mapLayer.type === 'fill' && mapSource.type === 'geojson') {
-                var fillColor = map.getPaintProperty(id, 'fill-color') || '';
-                var fillOpacity = map.getPaintProperty(id, 'fill-opacity') || '';
-                var faClass = "<i class='fa geojson-polygon' aria-hidden='true' style='color:"+ fillColor +";opacity:"+ fillOpacity+";'></i>";
+
+            if (!collectionObj[0].hasOwnProperty('icon')) {
+                if (mapLayer.type === 'fill' && mapSource.type === 'geojson') {
+                    var fillColor = map.getPaintProperty(id, 'fill-color') || '';
+                    var fillOpacity = map.getPaintProperty(id, 'fill-opacity') || '';
+                    var faClass = "<i class='fa geojson-polygon' aria-hidden='true' style='color:"+ fillColor +";opacity:"+ fillOpacity+";'></i>";
+
+                } else if (mapLayer.type === 'line' && mapSource.type === 'geojson') {
+                    var lineColor = map.getPaintProperty(id, 'line-color') || '';
+
+                    if (map.getPaintProperty(id, 'line-dasharray')) {
+                        var faClass = "<i class='fa geojson-line-dashed' aria-hidden='true' style='color:"+ lineColor +";'></i>";
+                    } else {
+                        var faClass = "<i class='fa geojson-line-solid' aria-hidden='true' style='color:"+ lineColor +";'></i>";
+                    }
+                }
 
                 $(lyrElm + ' span.name').before(faClass);
+            } else {
+                var imgClass = "<img src='" + collectionObj[0].icon + "' alt='" + collectionObj[0].id + "'>";
+                $(lyrElm + ' span.name').before(imgClass);
             }
         }
     }

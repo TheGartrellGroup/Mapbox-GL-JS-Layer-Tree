@@ -37,17 +37,20 @@ map.on('load', function () {
         }
     });
 
-    map.addSource('bikes', { type: 'geojson', data: 'http://gis.pdx.opendata.arcgis.com/datasets/470aa3de09244de4a3a94150b86a648b_10.geojson' });
+    map.addSource('snow-routes', { type: 'geojson', data: 'http://gis.pdx.opendata.arcgis.com/datasets/902bba133844409e9307807e85c847a0_69.geojson' });
     map.addLayer({
-        "id": "bikes",
-        "type": "circle",
-        "source": "bikes",
+        "id": "snow-routes",
+        "type": "line",
+        "source": "snow-routes",
         "layout": {
-            "visibility": 'visible'
+            "visibility": "visible",
+            "line-join": "round",
+            "line-cap": "round"
         },
         "paint": {
-            "circle-radius": 5,
-            "circle-color": "#d4d437"
+            "line-color": "#d4d437",
+            "line-width": 3,
+            "line-dasharray": [4,4],
         }
     });
 
@@ -62,16 +65,6 @@ map.on('load', function () {
         }
     });
 
-    // map.addLayer({
-    //     "id": "act-twy-edge",
-    //     "type": "symbol",
-    //     "source": "",
-    //     "layout": {
-    //         "icon-image": "circle-stroked-15",
-    //         "visibility": "none"
-    //     }
-    // });
-
 });
 
 var layers =
@@ -83,8 +76,8 @@ var layers =
         'select': 'checkbox',
     },
     {
-        'name': 'Bikes',
-        'source': 'bikes',
+        'name': 'Snow Routes',
+        'source': 'snow-routes',
         'directory': 'Environment',
         'select': 'checkbox',
     },
@@ -99,6 +92,7 @@ var layers =
         'source': 'airlights',
         'directory': 'Environment',
         'select': 'checkbox',
+        'icon': 'icons/Electric-Airfield-Lights_15.svg'
     }
 
 ];

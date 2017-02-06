@@ -1,0 +1,20 @@
+<svg id="dimensions" xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 11 11">
+  <title>active-twy-edge</title>
+  <g>
+    <polyline points="11 0.25 11 0 10.75 0" fill="none" stroke="#00aeef" stroke-miterlimit="10" stroke-width="0.05"/>
+    <line x1="10.25" x2="0.5" fill="none" stroke="#00aeef" stroke-miterlimit="10" stroke-width="0.05" stroke-dasharray="0.5 0.5"/>
+    <polyline points="0.25 0 0 0 0 0.25" fill="none" stroke="#00aeef" stroke-miterlimit="10" stroke-width="0.05"/>
+    <line y1="0.75" y2="10.5" fill="none" stroke="#00aeef" stroke-miterlimit="10" stroke-width="0.05" stroke-dasharray="0.5 0.5"/>
+    <polyline points="0 10.75 0 11 0.25 11" fill="none" stroke="#00aeef" stroke-miterlimit="10" stroke-width="0.05"/>
+    <line x1="0.75" y1="11" x2="10.5" y2="11" fill="none" stroke="#00aeef" stroke-miterlimit="10" stroke-width="0.05" stroke-dasharray="0.5 0.5"/>
+    <polyline points="10.75 11 11 11 11 10.75" fill="none" stroke="#00aeef" stroke-miterlimit="10" stroke-width="0.05"/>
+    <line x1="11" y1="10.25" x2="11" y2="0.5" fill="none" stroke="#00aeef" stroke-miterlimit="10" stroke-width="0.05" stroke-dasharray="0.5 0.5"/>
+  </g>
+  <g id="active_airfield_light_11_copy" data-name="active airfield light 11 copy">
+    <g>
+      <circle cx="5.4133" cy="5.4136" r="3.2212" fill="none"/>
+      <path d="M8.7167,8.01a4.1372,4.1372,0,0,0,.0784-5.0973l1.5584-1.5589a0.5,0.5,0,1,0-.707-0.707L8.1046,2.1888a4.1312,4.1312,0,0,0-5.2875-.0782L1.3535,0.6465a0.5,0.5,0,0,0-.707.707L2.11,2.8176a4.1313,4.1313,0,0,0,.0784,5.2868l-1.51,1.51a0.5,0.5,0,1,0,.707.707L2.912,8.795A4.1375,4.1375,0,0,0,8.01,8.7167l1.6368,1.6368a0.5,0.5,0,0,0,.707-0.707Zm-3.3036.6251A3.2212,3.2212,0,1,1,8.6348,5.4136,3.2242,3.2242,0,0,1,5.4131,8.6348Z" fill="#ed1c24"/>
+    </g>
+    <circle cx="5.4063" cy="5.3125" r="1" fill="#ed1c24"/>
+  </g>
+</svg>

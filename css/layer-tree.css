@@ -51,3 +51,11 @@
 .geojson-polygon:before {
     content: "\f0c8";
 }
+
+.geojson-line-solid:before {
+    content: "\f068";
+}
+
+.geojson-line-dashed:before {
+    content: "\f141";
+}
