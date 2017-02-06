@@ -29,6 +29,10 @@
     margin-right: 5px;
 }
 
+.layer-item span.name {
+    margin-left: 5px;
+}
+
 /* .grb is class for all sortable components */
 .grb {
     cursor: move; /* fallback if grab cursor is unsupported */
@@ -41,4 +45,9 @@
     cursor: grabbing;
     cursor: -moz-grabbing;
     cursor: -webkit-grabbing;
+}
+
+/* font awesome classes */
+.geojson-polygon:before {
+    content: "\f0c8";
 }

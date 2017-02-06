@@ -22,7 +22,7 @@ LayerTree.prototype.onAdd = function(map) {
     layerBox.appendChild(legendDiv);
     this._container.appendChild(layerBox);
 
-    this.getLayers(this._map, this.options.layers, this.collection, this.appendLayerToLegend, this.enableSortHandler, this.loadComplete);
+    this.getLayers(map);
     return this._container;
 }
 
@@ -33,7 +33,11 @@ LayerTree.prototype.onRemove = function() {
 
 
 //get layers once they start loading
-LayerTree.prototype.getLayers = function(map, layers, collection, appendLegend, sortHandler, loadComplete) {
+LayerTree.prototype.getLayers = function(map) {
+    var _this = this;
+    var layers = _this.options.layers;
+    var collection = _this.collection;
+
     map.on('sourcedataloading', function(e) {
         var lyr = layers.filter(function(layer) {
             return layer.source === e.sourceId;
@@ -42,11 +46,11 @@ LayerTree.prototype.getLayers = function(map, layers, collection, appendLegend, 
         if (lyr[0]) {
             var mapLyrObj = map.getSource(e.sourceId);
             collection.push(mapLyrObj);
-            appendLegend(map, mapLyrObj, lyr[0]);
+            _this.appendLayerToLegend(map, mapLyrObj, lyr[0]);
         }
 
         if (collection.length === layers.length) {
-            sortHandler(map, loadComplete(map, collection));
+            _this.enableSortHandler(map, _this.loadComplete(_this, map, collection));
         }
     });
 }
@@ -60,8 +64,7 @@ LayerTree.prototype.appendLayerToLegend = function(map, mapLyrObj, lyr) {
 
     var layerName = lyr.name;
     var layerId = lyr.source;
-    var layerType = lyr.select.toLowerCase();
-    var layerDiv = "<div id='" + layerId + "' class='layer-item grb'><input class='toggle-layer' type='" + layerType + "' >" + layerName + "</div>";
+    var layerDiv = "<div id='" + layerId + "' class='layer-item grb'><input class='toggle-layer' type='checkbox'><span class='name'>" + layerName + "</span></div>";
 
     if ($('#' + directoryId).length) {
         $('#' + directoryId).append(layerDiv);
@@ -69,6 +72,65 @@ LayerTree.prototype.appendLayerToLegend = function(map, mapLyrObj, lyr) {
         $(legendId).append("<div id='" + directoryId + "' class='layer-directory grb'><div class='directory-name'>" + directoryName + "</div></div>")
         $('#' + directoryId).append(layerDiv);
     }
+}
+
+LayerTree.prototype.updateLegend = function(map, collection, lyrs) {
+    var layers = map.getStyle().layers;
+    var arrayObj = [];
+
+    //update legend once layers are fully loaded
+    for (var i = collection.length - 1; i >= 0; i--) {
+        var id = collection[i].id;
+        var lyrElm = '#' + id;
+        var dir = $(lyrElm).parent('.layer-directory');
+        var lyrArray = dir.children('.layer-item');
+
+        var layerIndex = findLayerIndex(layers, collection, i);
+        $(lyrElm).attr('initial-index', layerIndex);
+
+        sortLoadedLayers(lyrArray, dir);
+        visible(map, id, lyrElm);
+        addIcons(map, id, lyrs, lyrElm);
+    }
+
+    //sort legends based on initial on layer index
+    function sortLoadedLayers() {
+        lyrArray.sort(function(a, b) {
+            var aVal = parseInt(a.getAttribute('initial-index')),
+                bVal = parseInt(b.getAttribute('initial-index'));
+            return bVal - aVal;
+        });
+
+        lyrArray.detach().appendTo(dir);
+    }
+
+    //activate checkbox if layer is visible
+    function visible(map) {
+        var visibility = map.getLayoutProperty(id, 'visibility');
+        if (visibility === 'visible') {
+            $(lyrElm + ' input').prop("checked", true);
+        }
+    }
+
+    //assign legend icons
+    function addIcons(map, id, lyrs, lyrElm) {
+        var collectionObj = $.grep(lyrs, function(i) {
+            return id === i.source;
+        });
+
+        if (collectionObj.length && !collectionObj[0].hasOwnProperty('icon')) {
+            var mapLayer = map.getLayer(id);
+            var mapSource = map.getSource(id);
+            if (mapLayer.type === 'fill' && mapSource.type === 'geojson') {
+                var fillColor = map.getPaintProperty(id, 'fill-color') || '';
+                var fillOpacity = map.getPaintProperty(id, 'fill-opacity') || '';
+                var faClass = "<i class='fa geojson-polygon' aria-hidden='true' style='color:"+ fillColor +";opacity:"+ fillOpacity+";'></i>";
+
+                $(lyrElm + ' span.name').before(faClass);
+            }
+        }
+    }
+
 }
 
 //callback to activate jquery-ui-sortable
@@ -124,46 +186,19 @@ LayerTree.prototype.enableSortHandler = function(map) {
     });
 }
 
-
 //callback to check if map is loaded
-LayerTree.prototype.loadComplete = function(map, collection) {
-    map.on('render', mapLoaded);
-
-    function mapLoaded() {
+LayerTree.prototype.loadComplete = function(_that, map, collection) {
+    var mapLoaded = function(updateLegend) {
         if (map.loaded()) {
-            var layers = map.getStyle().layers;
-            var arrayObj = [];
 
-            //update legend once layers are fully loaded
-            for (var i = collection.length - 1; i >= 0; i--) {
-                var id = collection[i].id;
-                var lyrElm = '#' + id;
-                var dir = $(lyrElm).parent('.layer-directory');
-                var lyrArray = dir.children('.layer-item');
-
-                var layerIndex = findLayerIndex(layers, collection, i);
-                $(lyrElm).attr('initial-index', layerIndex);
-
-                //sort legends based on initial on layer index
-                lyrArray.sort(function(a, b) {
-                    var aVal = parseInt(a.getAttribute('initial-index')),
-                        bVal = parseInt(b.getAttribute('initial-index'));
-                    return bVal - aVal;
-                });
-
-                lyrArray.detach().appendTo(dir);
-
-                //activate checkbox if layer is visible
-                var visibility = map.getLayoutProperty(id, 'visibility');
-                if (visibility === 'visible') {
-                    $(lyrElm + ' input').prop("checked", true);
-                }
-            }
+            _that.updateLegend(map, collection, _that.options.layers)
 
             $('.mapboxgl-ctrl.legend-container').show();
             map.off('render', mapLoaded)
         }
     }
+
+    map.on('render', mapLoaded);
 }
 
 //find layer index location

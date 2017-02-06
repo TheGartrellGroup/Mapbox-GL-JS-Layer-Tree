@@ -51,6 +51,27 @@ map.on('load', function () {
         }
     });
 
+    map.addSource('airlights', { 'type': 'geojson', 'data': 'data/PORT.elec_airfield_light.json' });
+    map.addLayer({
+        "id": "airlights",
+        "type": "symbol",
+        "source": "airlights",
+        "layout": {
+            "icon-image": "airfield-11",
+            'visibility': 'none'
+        }
+    });
+
+    // map.addLayer({
+    //     "id": "act-twy-edge",
+    //     "type": "symbol",
+    //     "source": "",
+    //     "layout": {
+    //         "icon-image": "circle-stroked-15",
+    //         "visibility": "none"
+    //     }
+    // });
+
 });
 
 var layers =
@@ -70,6 +91,12 @@ var layers =
     {
         'name': 'Neighborhood',
         'source': 'neighborhood',
+        'directory': 'Environment',
+        'select': 'checkbox',
+    },
+    {
+        'name': 'Airlights',
+        'source': 'airlights',
         'directory': 'Environment',
         'select': 'checkbox',
     }
