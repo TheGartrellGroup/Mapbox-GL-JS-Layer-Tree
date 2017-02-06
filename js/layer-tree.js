@@ -31,7 +31,6 @@ LayerTree.prototype.onRemove = function() {
     this._map = undefined;
 }
 
-
 //get layers once they start loading
 LayerTree.prototype.getLayers = function(map) {
     var _this = this;
@@ -93,8 +92,11 @@ LayerTree.prototype.updateLegend = function(map, collection, lyrs) {
         addIcons(map, id, lyrs, lyrElm);
     }
 
+    sortLoadedDirectories();
+
+
     //sort legends based on initial on layer index
-    function sortLoadedLayers() {
+    function sortLoadedLayers(lyrArray, dir) {
         lyrArray.sort(function(a, b) {
             var aVal = parseInt(a.getAttribute('initial-index')),
                 bVal = parseInt(b.getAttribute('initial-index'));
@@ -122,6 +124,7 @@ LayerTree.prototype.updateLegend = function(map, collection, lyrs) {
             var mapLayer = map.getLayer(id);
             var mapSource = map.getSource(id);
 
+            //is there a default icon in the config?
             if (!collectionObj[0].hasOwnProperty('icon')) {
                 if (mapLayer.type === 'fill' && mapSource.type === 'geojson') {
                     var fillColor = map.getPaintProperty(id, 'fill-color') || '';
@@ -137,13 +140,28 @@ LayerTree.prototype.updateLegend = function(map, collection, lyrs) {
                         var faClass = "<i class='fa geojson-line-solid' aria-hidden='true' style='color:"+ lineColor +";'></i>";
                     }
                 }
-
                 $(lyrElm + ' span.name').before(faClass);
             } else {
                 var imgClass = "<img src='" + collectionObj[0].icon + "' alt='" + collectionObj[0].id + "'>";
                 $(lyrElm + ' span.name').before(imgClass);
             }
         }
+    }
+
+    //sort initial loading of directories
+    function sortLoadedDirectories() {
+        var layerDirectories = $('.layer-directory');
+        var legend = $('#mapboxgl-legend');
+        $.each(layerDirectories, function(i) {
+            //get the highest index value for each directory
+            var highestIndex = $(this).children('.layer-item:first');
+            var indexVal = highestIndex.attr('initial-index') * 10;
+
+            //apply value to directory
+            $(this).attr('initial-index', indexVal);
+        })
+
+        sortLoadedLayers(layerDirectories, legend);
     }
 
 }
@@ -153,8 +171,21 @@ LayerTree.prototype.enableSortHandler = function(map) {
     //sortable directories
     $('#mapboxgl-legend').sortable({
         items: '.layer-directory',
-        change: function(e, ui) {
-            console.log(e, ui);
+        stop: function(e, ui) {
+
+            var orderArray = [];
+            var layers = map.getStyle().layers;
+            var newDirOrder = ui.item.parent().sortable('toArray');
+
+            //this loop starts at the directory above the lowest indexed
+            for (var i = newDirOrder.length - 2; i >= 0; i--) {
+                var dir = newDirOrder[i];
+                var layerArray = $('#' + dir).sortable('toArray');
+
+                for (var i = layerArray.length - 1; i >= 0; i--) {
+                    map.moveLayer(layerArray[i]);
+                };
+            }
         }
     });
 

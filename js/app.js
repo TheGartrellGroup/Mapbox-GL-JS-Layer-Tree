@@ -37,6 +37,17 @@ map.on('load', function () {
         }
     });
 
+    map.addSource('airlights', { 'type': 'geojson', 'data': 'data/PORT.elec_airfield_light.json' });
+    map.addLayer({
+        "id": "airlights",
+        "type": "symbol",
+        "source": "airlights",
+        "layout": {
+            "icon-image": "airfield-11",
+            'visibility': 'none'
+        }
+    });
+
     map.addSource('snow-routes', { type: 'geojson', data: 'http://gis.pdx.opendata.arcgis.com/datasets/902bba133844409e9307807e85c847a0_69.geojson' });
     map.addLayer({
         "id": "snow-routes",
@@ -54,17 +65,6 @@ map.on('load', function () {
         }
     });
 
-    map.addSource('airlights', { 'type': 'geojson', 'data': 'data/PORT.elec_airfield_light.json' });
-    map.addLayer({
-        "id": "airlights",
-        "type": "symbol",
-        "source": "airlights",
-        "layout": {
-            "icon-image": "airfield-11",
-            'visibility': 'none'
-        }
-    });
-
 });
 
 var layers =
@@ -72,7 +72,7 @@ var layers =
     {
         'name': 'City Boundaries',
         'source': 'city-boundaries',
-        'directory': 'Environment',
+        'directory': 'Community',
         'select': 'checkbox',
     },
     {
@@ -84,7 +84,7 @@ var layers =
     {
         'name': 'Neighborhood',
         'source': 'neighborhood',
-        'directory': 'Environment',
+        'directory': 'Community',
         'select': 'checkbox',
     },
     {
