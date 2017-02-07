@@ -33,6 +33,10 @@
     margin-right: 5px;
 }
 
+.layer-item.ghost {
+    color: #D3D3D3;
+}
+
 .layer-item span.name {
     margin-left: 5px;
 }

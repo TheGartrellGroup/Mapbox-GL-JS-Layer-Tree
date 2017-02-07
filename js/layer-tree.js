@@ -36,6 +36,9 @@ LayerTree.prototype.getLayers = function(map) {
     var layers = _this.options.layers;
     var collection = _this.collection;
 
+    map.collection = collection;
+    map.lyrs = layers;
+
     map.on('sourcedataloading', function(e) {
         var lyr = layers.filter(function(layer) {
             return layer.source === e.sourceId;
@@ -135,6 +138,12 @@ LayerTree.prototype.updateLegend = function(map, collection, lyrs) {
 
         if ($(this).is(':checked')) {
             map.setLayoutProperty(lyrId, 'visibility', 'visible');
+            var features = map.queryRenderedFeatures({layers:[lyrId]});
+            if (features === undefined || features.length === 0) {
+                $('#'+lyrId).addClass('ghost')
+            } else {
+                $('#'+lyrId).removeClass('ghost');
+            }
         } else {
             map.setLayoutProperty(lyrId, 'visibility', 'none');
         }
@@ -297,7 +306,25 @@ LayerTree.prototype.loadComplete = function(_that, map, collection) {
         }
     }
 
+    var moveEnd = function(e) {
+        var lyrsArray = [];
+        for (var i = map.lyrs.length - 1; i >= 0; i--) {
+            var lyrID = map.lyrs[i].source;
+
+            if ($('#'+ lyrID + ' .toggle-layer').prop('checked')) {
+                var features = map.queryRenderedFeatures({layers:[lyrID]});
+                if (features === undefined || features.length === 0) {
+                    $('#'+lyrID).addClass('ghost')
+                } else {
+                    $('#'+lyrID).removeClass('ghost');
+                }
+            }
+        };
+    }
+
+
     map.on('render', mapLoaded);
+    map.on('moveend', moveEnd);
 }
 
 //find layer index location
