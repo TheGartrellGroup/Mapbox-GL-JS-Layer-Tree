@@ -2,9 +2,10 @@ mapboxgl.accessToken = 'pk.eyJ1IjoiZG5zZW1pbmFyYSIsImEiOiJpcVhHYXQ4In0.11lnsgwtP
 
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/streets-v9',
+    style: 'mapbox://styles/mapbox/light-v9',
     center: [-122.595, 45.589],
-    zoom: 12
+    zoom: 10,
+    attributionControl: false,
 });
 
 map.on('load', function () {
@@ -73,30 +74,49 @@ var layers =
         'name': 'City Boundaries',
         'source': 'city-boundaries',
         'directory': 'Community',
-        'select': 'checkbox',
     },
     {
         'name': 'Snow Routes',
         'source': 'snow-routes',
         'directory': 'Environment',
-        'select': 'checkbox',
     },
     {
         'name': 'Neighborhood',
         'source': 'neighborhood',
         'directory': 'Community',
-        'select': 'checkbox',
     },
     {
         'name': 'Airlights',
         'source': 'airlights',
         'directory': 'Environment',
-        'select': 'checkbox',
         'icon': 'icons/Electric-Airfield-Lights_15.svg'
+    }
+
+];
+
+var basemaps =
+[
+    {
+        'name': 'Streets',
+        'id': 'streets',
+        'source': 'mapbox://styles/mapbox/streets-v9',
+        'directory': 'Base Maps',
+    },
+    {
+        'name': 'Basic',
+        'id': 'basic',
+        'source': 'mapbox://styles/mapbox/basic-v9',
+        'directory': 'Base Maps',
+    },
+    {
+        'name': 'Bright',
+        'id': 'bright',
+        'source': 'mapbox://styles/mapbox/light-v9',
+        'directory': 'Base Maps',
     }
 
 ];
 
 // Add zoom and rotation controls to the map.
 map.addControl(new mapboxgl.NavigationControl());
-map.addControl(new LayerTree({layers: layers}), 'bottom-left');
+map.addControl(new LayerTree({layers: layers, basemaps: basemaps}), 'bottom-left');

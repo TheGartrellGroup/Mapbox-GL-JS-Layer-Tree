@@ -5,7 +5,6 @@ function LayerTree(options) {
     this.collection = [];
 }
 
-
 LayerTree.prototype.onAdd = function(map) {
     this._map = map;
     this._container = document.createElement('div');
@@ -49,6 +48,7 @@ LayerTree.prototype.getLayers = function(map) {
         }
 
         if (collection.length === layers.length) {
+            _this.loadBasemaps(map, _this.options.basemaps);
             _this.enableSortHandler(map, _this.loadComplete(_this, map, collection));
         }
     });
@@ -59,7 +59,7 @@ LayerTree.prototype.appendLayerToLegend = function(map, mapLyrObj, lyr) {
     var legendId = '#mapboxgl-legend';
 
     var directoryName = lyr.directory;
-    var directoryId = directoryName.replace(/\s+/g, '-').toLowerCase()
+    var directoryId = directoryName.replace(/\s+/g, '-').toLowerCase();
 
     var layerName = lyr.name;
     var layerId = lyr.source;
@@ -68,9 +68,47 @@ LayerTree.prototype.appendLayerToLegend = function(map, mapLyrObj, lyr) {
     if ($('#' + directoryId).length) {
         $('#' + directoryId).append(layerDiv);
     } else {
-        $(legendId).append("<div id='" + directoryId + "' class='layer-directory grb'><div class='directory-name'>" + directoryName + "</div></div>")
+        $(legendId).append("<div id='" + directoryId + "' class='layer-directory grb'><div class='directory-name'>" + directoryName + "</div></div>");
         $('#' + directoryId).append(layerDiv);
     }
+}
+
+LayerTree.prototype.loadBasemaps = function(map, basemaps) {
+    var legendId = '#mapboxgl-legend';
+
+    for (var i = basemaps.length - 1; i >= 0; i--) {
+        var baseDir = basemaps[i].directory;
+        var baseDirID = baseDir.replace(/\s+/g, '-').toLowerCase();
+
+        var mapStyle = basemaps[i].name;
+        var mapStyleID = basemaps[i].id;
+        var mapStyleSource = basemaps[i].source;
+
+        var baseDiv = "<div id='" + mapStyleID + "' class='layer-item grb'><input class='toggle-basemap' type='radio' base-style='" + mapStyleSource + "'><span class='name'>" + mapStyle + "</span></div>";
+
+        if ($('#' + baseDirID).length) {
+            $('#' + baseDirID).append(baseDiv);
+        } else {
+            $(legendId).append("<div id='" + baseDirID + "' class='layer-directory grb'><div class='directory-name'>" + baseDir + "</div></div>");
+            $('#' + baseDirID).append(baseDiv);
+        }
+
+        //rough logic to get map style param
+        var styleSubstring = basemaps[i].source.replace('mapbox://styles','');
+        if (map.style.stylesheet.sprite.indexOf(styleSubstring) > -1) {
+            $('#'+ mapStyleID +' input').prop("checked", true);
+        }
+
+        $('body').on('click', '.toggle-basemap', function() {
+            var elmId = $(this).parent().attr('id');
+            var clickedMap = $('#'+elmId + ' input[type=radio]');
+            $('.toggle-basemap').prop('checked', false);
+
+            clickedMap.prop('checked', true)
+            //map.setStyle(clickedMap.attr('base-style'), {diff:true});
+        });
+    };
+
 }
 
 LayerTree.prototype.updateLegend = function(map, collection, lyrs) {
@@ -91,6 +129,16 @@ LayerTree.prototype.updateLegend = function(map, collection, lyrs) {
         visible(map, id, lyrElm);
         addIcons(map, id, lyrs, lyrElm);
     }
+
+    $('body').on('click', '.toggle-layer', function() {
+        var lyrId = $(this).parent().attr('id');
+
+        if ($(this).is(':checked')) {
+            map.setLayoutProperty(lyrId, 'visibility', 'visible');
+        } else {
+            map.setLayoutProperty(lyrId, 'visibility', 'none');
+        }
+    });
 
     sortLoadedDirectories();
 
@@ -266,16 +314,3 @@ function findLayerIndex(layers, array, indexVal) {
     };
     return index;
 }
-
-$(document).ready(function() {
-    $('body').on('click', '.toggle-layer', function() {
-        var elmId = $(this).parent().attr('id');
-        var lyrId = elmId;
-
-        if ($(this).is(':checked')) {
-            map.setLayoutProperty(lyrId, 'visibility', 'visible');
-        } else {
-            map.setLayoutProperty(lyrId, 'visibility', 'none');
-        }
-    })
-});
