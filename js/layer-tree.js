@@ -138,12 +138,17 @@ LayerTree.prototype.updateLegend = function(map, collection, lyrs) {
 
         if ($(this).is(':checked')) {
             map.setLayoutProperty(lyrId, 'visibility', 'visible');
-            var features = map.queryRenderedFeatures({layers:[lyrId]});
-            if (features === undefined || features.length === 0) {
-                $('#'+lyrId).addClass('ghost')
-            } else {
-                $('#'+lyrId).removeClass('ghost');
-            }
+
+            map.on('render', function() {
+                if (map.loaded() && map.getLayoutProperty(lyrId, 'visibility') === 'visbile') {
+                    var features = map.queryRenderedFeatures({layers:[lyrId]});
+                    if (features === undefined || features.length === 0) {
+                        $('#'+lyrId).addClass('ghost')
+                    } else {
+                        $('#'+lyrId).removeClass('ghost');
+                    }
+                }
+            })
         } else {
             map.setLayoutProperty(lyrId, 'visibility', 'none');
         }
