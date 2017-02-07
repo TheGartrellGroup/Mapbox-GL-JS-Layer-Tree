@@ -13,6 +13,10 @@
     float: none;
 }
 
+#mapboxgl-legend {
+    padding: 5px;
+}
+
 .layer-directory .directory-name {
     font-size: 18px;
     font-weight: 500;
@@ -58,4 +62,14 @@
 
 .geojson-line-dashed:before {
     content: "\f141";
+}
+
+.toggle-directory-open:before{
+    content: "\f07c";
+    margin-left: 5px;
+}
+
+.toggle-directory-close:before {
+    content: "\f07b";
+    margin-left: 5px;
 }

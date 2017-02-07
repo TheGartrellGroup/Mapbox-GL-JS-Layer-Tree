@@ -68,7 +68,7 @@ LayerTree.prototype.appendLayerToLegend = function(map, mapLyrObj, lyr) {
     if ($('#' + directoryId).length) {
         $('#' + directoryId).append(layerDiv);
     } else {
-        $(legendId).append("<div id='" + directoryId + "' class='layer-directory grb'><div class='directory-name'>" + directoryName + "</div></div>");
+        $(legendId).append("<div id='" + directoryId + "' class='layer-directory grb'><div class='directory-name'>" + directoryName + "<i class='fa toggle-directory-open' aria-hidden='true'</i></div></div>");
         $('#' + directoryId).append(layerDiv);
     }
 }
@@ -138,6 +138,11 @@ LayerTree.prototype.updateLegend = function(map, collection, lyrs) {
         } else {
             map.setLayoutProperty(lyrId, 'visibility', 'none');
         }
+    });
+
+    $('.directory-name').click(function() {
+        $(this).parent().find('.layer-item').toggle();
+        $(this).find('i').toggleClass('toggle-directory-open toggle-directory-close');
     });
 
     sortLoadedDirectories();
