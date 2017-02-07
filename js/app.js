@@ -45,7 +45,7 @@ map.on('load', function () {
         "source": "airlights",
         "layout": {
             "icon-image": "airfield-11",
-            'visibility': 'none'
+            'visibility': 'visible'
         }
     });
 
@@ -73,7 +73,7 @@ var layers =
     {
         'name': 'City Boundaries',
         'source': 'city-boundaries',
-        'directory': 'Community',
+        'directory': 'Metro',
     },
     {
         'name': 'Snow Routes',

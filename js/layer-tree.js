@@ -48,7 +48,7 @@ LayerTree.prototype.getLayers = function(map) {
         }
 
         if (collection.length === layers.length) {
-            _this.loadBasemaps(map, _this.options.basemaps);
+            //_this.loadBasemaps(map, _this.options.basemaps);
             _this.enableSortHandler(map, _this.loadComplete(_this, map, collection));
         }
     });
@@ -230,8 +230,8 @@ LayerTree.prototype.enableSortHandler = function(map) {
                 var dir = newDirOrder[i];
                 var layerArray = $('#' + dir).sortable('toArray');
 
-                for (var i = layerArray.length - 1; i >= 0; i--) {
-                    map.moveLayer(layerArray[i]);
+                for (var j = layerArray.length - 1; j >= 0; j--) {
+                    map.moveLayer(layerArray[j]);
                 };
             }
         }
