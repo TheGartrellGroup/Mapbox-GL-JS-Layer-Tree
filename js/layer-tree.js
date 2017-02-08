@@ -2,7 +2,7 @@
 //@implements {IControl}
 function LayerTree(options) {
     this.options = options;
-    this.collection = [];
+    this.sources = [];
 }
 
 LayerTree.prototype.onAdd = function(map) {
@@ -34,25 +34,36 @@ LayerTree.prototype.onRemove = function() {
 LayerTree.prototype.getLayers = function(map) {
     var _this = this;
     var layers = _this.options.layers;
-    var collection = _this.collection;
+    var sourceCollection = _this.sources;
+    var numSources = [];
 
-    map.collection = collection;
+    map.sourceCollection = sourceCollection;
     map.lyrs = layers;
+
+    for (var s = layers.length - 1; s >= 0; s--) {
+        if ($.inArray(layers[s].source, numSources) === -1) {
+            numSources.push(layers[s].source)
+        }
+    };
 
     map.on('sourcedataloading', function(e) {
         var lyr = layers.filter(function(layer) {
             return layer.source === e.sourceId;
         });
 
-        if (lyr[0]) {
-            var mapLyrObj = map.getSource(e.sourceId);
-            collection.push(mapLyrObj);
-            _this.appendLayerToLegend(map, mapLyrObj, lyr[0]);
+        if (lyr.length) {
+            for (var l = lyr.length - 1; l >= 0; l--) {
+                if (lyr[l] === lyr[lyr.length-1]) {
+                    var mapLyrObj = map.getSource(e.sourceId);
+                    sourceCollection.push(mapLyrObj);
+                }
+                _this.appendLayerToLegend(map, mapLyrObj, lyr[l]);
+            };
         }
 
-        if (collection.length === layers.length) {
+        if (sourceCollection.length === numSources.length) {
             //_this.loadBasemaps(map, _this.options.basemaps);
-            _this.enableSortHandler(map, _this.loadComplete(_this, map, collection));
+            _this.enableSortHandler(map, _this.loadComplete(_this, map, sourceCollection));
         }
     });
 }
@@ -65,7 +76,7 @@ LayerTree.prototype.appendLayerToLegend = function(map, mapLyrObj, lyr) {
     var directoryId = directoryName.replace(/\s+/g, '-').toLowerCase();
 
     var layerName = lyr.name;
-    var layerId = lyr.source;
+    var layerId = lyr.id;
     var layerDiv = "<div id='" + layerId + "' class='layer-item grb'><input class='toggle-layer' type='checkbox'><span class='name'>" + layerName + "</span></div>";
 
     if ($('#' + directoryId).length) {
@@ -107,25 +118,47 @@ LayerTree.prototype.loadBasemaps = function(map, basemaps) {
             var clickedMap = $('#'+elmId + ' input[type=radio]');
             $('.toggle-basemap').prop('checked', false);
 
-            clickedMap.prop('checked', true)
-            //map.setStyle(clickedMap.attr('base-style'), {diff:true});
+            clickedMap.prop('checked', true);
+
+            var mapSources = Object.entries(map.getStyle().sources);
+            var mapLayers = map.getStyle().layers;
+
+
+            //map.setStyle('mapbox://style/mapbox/dark-v9');
+            map.on('style.load', function() {
+                var keepLayers = [];
+                for (var i = mapLayers.length - 1; i >= 0; i--) {
+                    for (var j = mapSources.length - 1; j >= 0; j--) {
+                        if (mapSources[j][0] !== 'composite') {
+                            if (!map.getSource(mapSources[j][0])) {
+                                map.addSource(mapSources[j][0], mapSources[j][1].url);
+                            }
+                            map.addLayer()
+                        }
+                        if (mapSources[j] !== 'composite' && mapSources[j] === mapLayers[i].source) {
+                            keepLayers.push(mapLayers[i]);
+                        }
+                    };
+                };
+            });
+
         });
     };
 
 }
 
-LayerTree.prototype.updateLegend = function(map, collection, lyrs) {
+LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
     var layers = map.getStyle().layers;
     var arrayObj = [];
 
     //update legend once layers are fully loaded
-    for (var i = collection.length - 1; i >= 0; i--) {
-        var id = collection[i].id;
+    for (var i = lyrs.length - 1; i >= 0; i--) {
+        var id = lyrs[i].id;
         var lyrElm = '#' + id;
         var dir = $(lyrElm).parent('.layer-directory');
         var lyrArray = dir.children('.layer-item');
 
-        var layerIndex = findLayerIndex(layers, collection, i);
+        var layerIndex = findLayerIndex(layers, lyrs, i);
         $(lyrElm).attr('initial-index', layerIndex);
 
         sortLoadedLayers(lyrArray, dir);
@@ -174,7 +207,7 @@ LayerTree.prototype.updateLegend = function(map, collection, lyrs) {
     }
 
     //activate checkbox if layer is visible
-    function visible(map) {
+    function visible(map, id, lyrElm) {
         var visibility = map.getLayoutProperty(id, 'visibility');
         if (visibility !== 'none') {
             $(lyrElm + ' input').prop("checked", true);
@@ -183,16 +216,16 @@ LayerTree.prototype.updateLegend = function(map, collection, lyrs) {
 
     //assign legend icons
     function addIcons(map, id, lyrs, lyrElm) {
-        var collectionObj = $.grep(lyrs, function(i) {
-            return id === i.source;
+        var obj = $.grep(lyrs, function(i) {
+            return id === i.id;
         });
 
-        if (collectionObj.length) {
+        if (obj.length) {
             var mapLayer = map.getLayer(id);
-            var mapSource = map.getSource(id);
+            var mapSource = map.getSource(obj[0].source);
 
             //is there a default icon in the config?
-            if (!collectionObj[0].hasOwnProperty('icon')) {
+            if (!obj[0].hasOwnProperty('icon')) {
                 if (mapLayer.type === 'fill' && mapSource.type === 'geojson') {
                     var fillColor = map.getPaintProperty(id, 'fill-color') || '';
                     var fillOpacity = map.getPaintProperty(id, 'fill-opacity') || '';
@@ -209,7 +242,7 @@ LayerTree.prototype.updateLegend = function(map, collection, lyrs) {
                 }
                 $(lyrElm + ' span.name').before(faClass);
             } else {
-                var imgClass = "<img src='" + collectionObj[0].icon + "' alt='" + collectionObj[0].id + "'>";
+                var imgClass = "<img src='" + obj[0].icon + "' alt='" + obj[0].id + "'>";
                 $(lyrElm + ' span.name').before(imgClass);
             }
         }
@@ -279,7 +312,7 @@ LayerTree.prototype.enableSortHandler = function(map) {
                     var obj = {
                         'originalOrder': layerIndex,
                         'newOrder': i,
-                        'source': newLayerOrder[i],
+                        'id': newLayerOrder[i],
 
                     }
                     orderArray.push(obj);
@@ -290,9 +323,9 @@ LayerTree.prototype.enableSortHandler = function(map) {
             //move layer order
             orderArray.sort(function(a, b) {
                 if (b.newOrder > a.originalOrder) {
-                    map.moveLayer(a.source, b.source);
+                    map.moveLayer(a.id, b.id);
                 } else {
-                    map.moveLayer(b.source, a.source);
+                    map.moveLayer(b.id, a.id);
                 }
             })
         }
@@ -300,11 +333,11 @@ LayerTree.prototype.enableSortHandler = function(map) {
 }
 
 //callback to check if map is loaded
-LayerTree.prototype.loadComplete = function(_that, map, collection) {
+LayerTree.prototype.loadComplete = function(_that, map, sourceCollection) {
     var mapLoaded = function(updateLegend) {
         if (map.loaded()) {
 
-            _that.updateLegend(map, collection, _that.options.layers)
+            _that.updateLegend(map, sourceCollection, _that.options.layers);
 
             $('.mapboxgl-ctrl.legend-container').show();
             map.off('render', mapLoaded)
@@ -314,7 +347,7 @@ LayerTree.prototype.loadComplete = function(_that, map, collection) {
     var moveEnd = function(e) {
         var lyrsArray = [];
         for (var i = map.lyrs.length - 1; i >= 0; i--) {
-            var lyrID = map.lyrs[i].source;
+            var lyrID = map.lyrs[i].id;
 
             if ($('#'+ lyrID + ' .toggle-layer').prop('checked')) {
                 var features = map.queryRenderedFeatures({layers:[lyrID]});
@@ -333,16 +366,16 @@ LayerTree.prototype.loadComplete = function(_that, map, collection) {
 }
 
 //find layer index location
-function findLayerIndex(layers, array, indexVal) {
+function findLayerIndex(allLayers, ourLayers, indexVal) {
     var index = -1;
-    for (var i = layers.length - 1; i >= 0; i--) {
-        if (typeof array[indexVal] === 'object' && array[indexVal] !== null) {
-            if (layers[i].id === array[indexVal].id) {
+    for (var i = allLayers.length - 1; i >= 0; i--) {
+        if (typeof ourLayers[indexVal] == 'object' && ourLayers[indexVal] !== null) {
+            if (allLayers[i].id === ourLayers[indexVal].id) {
                 index = i;
                 break
             }
         } else {
-            if (layers[i].id === array[indexVal]) {
+            if (allLayers[i].id === ourLayers[indexVal]) {
                 index = i;
                 break
             }

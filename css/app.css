@@ -8,3 +8,7 @@ body {
     bottom:0;
     width:100%;
 }
+
+.toggle-directory-open, .toggle-directory-close {
+    padding-top: 2px;
+}

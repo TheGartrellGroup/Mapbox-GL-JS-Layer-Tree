@@ -1,0 +1,24 @@
+<svg id="dimensions" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15">
+  <title>active-twy-edge</title>
+  <g>
+    <polyline points="15 14.75 15 15 14.75 15" fill="none" stroke="#00aeef" stroke-miterlimit="10" stroke-width="0.05"/>
+    <line x1="14.25" y1="15" x2="0.5" y2="15" fill="none" stroke="#00aeef" stroke-miterlimit="10" stroke-width="0.05" stroke-dasharray="0.5 0.5"/>
+    <polyline points="0.25 15 0 15 0 14.75" fill="none" stroke="#00aeef" stroke-miterlimit="10" stroke-width="0.05"/>
+    <line y1="14.25" y2="0.5" fill="none" stroke="#00aeef" stroke-miterlimit="10" stroke-width="0.05" stroke-dasharray="0.5 0.5"/>
+    <polyline points="0 0.25 0 0 0.25 0" fill="none" stroke="#00aeef" stroke-miterlimit="10" stroke-width="0.05"/>
+    <line x1="0.75" x2="14.5" fill="none" stroke="#00aeef" stroke-miterlimit="10" stroke-width="0.05" stroke-dasharray="0.5 0.5"/>
+    <polyline points="14.75 0 15 0 15 0.25" fill="none" stroke="#00aeef" stroke-miterlimit="10" stroke-width="0.05"/>
+    <line x1="15" y1="0.75" x2="15" y2="14.5" fill="none" stroke="#00aeef" stroke-miterlimit="10" stroke-width="0.05" stroke-dasharray="0.5 0.5"/>
+  </g>
+  <g id="active_airfield_light_15_copy" data-name="active airfield light 15 copy">
+    <g id="Layer_4_copy" data-name="Layer 4 copy">
+      <g>
+        <circle cx="7.375" cy="7.375" r="4.875" fill="none"/>
+        <path d="M11.8639,11.1569a5.8479,5.8479,0,0,0,.1113-7.425l2.3783-2.3783a0.5,0.5,0,0,0-.707-0.707L11.2878,3.0051a5.8453,5.8453,0,0,0-7.6947-.119l-2.24-2.24a0.5,0.5,0,0,0-.707.707l2.24,2.24a5.8453,5.8453,0,0,0,.119,7.6947L0.6934,13.6a0.5,0.5,0,1,0,.707.707l2.3314-2.3314a5.8479,5.8479,0,0,0,7.425-.1113l2.49,2.49a0.5,0.5,0,0,0,.707-0.707ZM7.375,12.25A4.875,4.875,0,1,1,12.25,7.375,4.88,4.88,0,0,1,7.375,12.25Z" fill="#ed1c24"/>
+      </g>
+    </g>
+  </g>
+  <g id="active_airfield_light_11_copy" data-name="active airfield light 11 copy">
+    <circle cx="7.3125" cy="7.25" r="1" fill="#ed1c24"/>
+  </g>
+</svg>

@@ -1,4 +1,4 @@
-mapboxgl.accessToken = 'pk.eyJ1IjoiZG5zZW1pbmFyYSIsImEiOiJpcVhHYXQ4In0.11lnsgwtP94BZEDcZHZK2g';
+mapboxgl.accessToken = '';
 
 var map = new mapboxgl.Map({
     container: 'map',
@@ -16,7 +16,7 @@ map.on('load', function () {
         "type": "fill",
         "source": "neighborhood",
         "layout": {
-            "visibility": 'visible'
+            "visibility": 'none'
         },
         "paint": {
             'fill-color': '#088',
@@ -38,24 +38,13 @@ map.on('load', function () {
         }
     });
 
-    map.addSource('airlights', { 'type': 'geojson', 'data': 'data/PORT.elec_airfield_light.json' });
-    map.addLayer({
-        "id": "airlights",
-        "type": "symbol",
-        "source": "airlights",
-        "layout": {
-            "icon-image": "airfield-11",
-            'visibility': 'visible'
-        }
-    });
-
-    map.addSource('snow-routes', { type: 'geojson', data: 'http://gis.pdx.opendata.arcgis.com/datasets/902bba133844409e9307807e85c847a0_69.geojson' });
+    map.addSource('snowy', { type: 'geojson', data: 'http://gis.pdx.opendata.arcgis.com/datasets/902bba133844409e9307807e85c847a0_69.geojson' });
     map.addLayer({
         "id": "snow-routes",
         "type": "line",
-        "source": "snow-routes",
+        "source": "snowy",
         "layout": {
-            "visibility": "visible",
+            "visibility": "none",
             "line-join": "round",
             "line-cap": "round"
         },
@@ -66,30 +55,86 @@ map.on('load', function () {
         }
     });
 
+    map.addSource('airy', {
+        'type': 'geojson',
+        'data': 'data/PORT.elec_airfield_light.json'
+    });
+
+    map.addLayer({
+        "id": "airlights",
+        "type": "symbol",
+        "source": "airy",
+        "layout": {
+            "icon-image": "Electric-Airfield-Lights_11",
+            'visibility': 'visible'
+        }
+    });
+    map.setFilter('airlights', ['==', 'airfield_light_type_cd', 'Runway Edge Light']);
+
+    map.addLayer({
+        "id": "act-twy-edge",
+        "type": "symbol",
+        "source": "airy",
+        "layout": {
+            "icon-image": "active-twy-edge_11",
+            'visibility': 'visible'
+        }
+    });
+    map.setFilter('act-twy-edge', ['==', 'airfield_light_type_cd', 'Taxiway Edge Light']);
+
+    map.addLayer({
+        "id": "act-twy-center",
+        "type": "symbol",
+        "source": "airy",
+        "layout": {
+            "icon-image": "active-twy-center_15",
+            'visibility': 'visible'
+        }
+    });
+    map.setFilter('act-twy-center', ['==', 'airfield_light_type_cd', 'Taxiway Centerline L852c Light']);
+
 });
 
 var layers =
 [
     {
         'name': 'City Boundaries',
+        'id': 'city-boundaries',
         'source': 'city-boundaries',
         'directory': 'Metro',
     },
     {
         'name': 'Snow Routes',
-        'source': 'snow-routes',
-        'directory': 'Environment',
+        'id': 'snow-routes',
+        'source': "snowy",
+        'directory': 'Community',
     },
     {
         'name': 'Neighborhood',
-        'source': 'neighborhood',
+        'id': 'neighborhood',
+        'source': "neighborhood",
         'directory': 'Community',
     },
     {
         'name': 'Airlights',
-        'source': 'airlights',
+        'id': 'airlights',
+        'source': "airy",
         'directory': 'Environment',
         'icon': 'icons/Electric-Airfield-Lights_15.svg'
+    },
+    {
+        'name': 'Act Twy Edge',
+        'id': 'act-twy-edge',
+        'source': "airy",
+        'directory': 'Environment',
+        'icon': 'icons/active-twy-edge_15.svg'
+    },
+    {
+        'name': 'Act Twy Center',
+        'id': 'act-twy-center',
+        'source': "airy",
+        'directory': 'Environment',
+        'icon': 'icons/active-twy-center_11.svg'
     }
 
 ];

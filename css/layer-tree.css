@@ -68,12 +68,14 @@
     content: "\f141";
 }
 
+.toggle-directory-open, .toggle-directory-close {
+    float: left;
+    margin-right: 5px;
+}
 .toggle-directory-open:before{
     content: "\f07c";
-    margin-left: 5px;
 }
 
 .toggle-directory-close:before {
     content: "\f07b";
-    margin-left: 5px;
 }
