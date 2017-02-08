@@ -12,3 +12,8 @@ body {
 .toggle-directory-open, .toggle-directory-close {
     padding-top: 2px;
 }
+
+#wms-test-layer img{
+    height: 15px;
+    width: 15px;
+}

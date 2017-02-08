@@ -10,6 +10,24 @@ var map = new mapboxgl.Map({
 
 map.on('load', function () {
 
+
+    map.addSource('wms-test', {
+         'type': 'raster',
+         'tiles': [
+             'http://www.oregongeology.org/arcgis/services/Public/ORPhysicalSamples/MapServer/WMSServer?version=1.3.0&styles=&format=png&CRS=EPSG:3857&bbox={bbox-epsg-3857}&request=GetMap&transparent=true&service=WMS&width=256&height=256&layers=0'
+         ],
+         'tileSize': 256
+    });
+    map.addLayer({
+         'id': 'wms-test-layer',
+         'type': 'raster',
+         'source': 'wms-test',
+         'paint': {
+            "raster-opacity": 0.8,
+            'raster-contrast': 0.8
+         }
+    });
+
     map.addSource('neighborhood', { type: 'geojson', data: 'http://gis.pdx.opendata.arcgis.com/datasets/c11815647b3949faa20b16cf50ab214d_125.geojson' });
     map.addLayer({
         "id": "neighborhood",
@@ -102,6 +120,13 @@ var layers =
         'id': 'city-boundaries',
         'source': 'city-boundaries',
         'directory': 'Metro',
+    },
+    {
+        'name': 'Random WMS Stars',
+        'id': 'wms-test-layer',
+        'source': 'wms-test',
+        'directory': 'Metro',
+        'icon': 'http://clipartist.net/links/clipartist.net/yellow_star-1979px.png'
     },
     {
         'name': 'Snow Routes',
