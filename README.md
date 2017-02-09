@@ -11,7 +11,7 @@ Allow users to interactively organize and reposition different map layers
 
 
 ### Usage
-- ##### Create a layer config array:
+- #### Create a layer config array:
     - **name** - to be displayed as the layer name in Legend
     - **id** - layer id
     - **source** - layer source
@@ -58,7 +58,7 @@ Allow users to interactively organize and reposition different map layers
      ];
      ```
 
-- ##### Instantiate Layer Tree
+- #### Instantiate Layer Tree
      ```javascript
        map.addControl(new LayerTree({
             layers: layers

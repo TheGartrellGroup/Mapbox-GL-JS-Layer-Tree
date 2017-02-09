@@ -123,8 +123,6 @@ LayerTree.prototype.loadBasemaps = function(map, basemaps) {
             var mapSources = Object.entries(map.getStyle().sources);
             var mapLayers = map.getStyle().layers;
 
-
-            //map.setStyle('mapbox://style/mapbox/dark-v9');
             map.on('style.load', function() {
                 var keepLayers = [];
                 for (var i = mapLayers.length - 1; i >= 0; i--) {

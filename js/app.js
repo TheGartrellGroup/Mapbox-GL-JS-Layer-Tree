@@ -10,48 +10,16 @@ var map = new mapboxgl.Map({
 
 map.on('load', function () {
 
-
-    map.addSource('wms-test', {
-         'type': 'raster',
-         'tiles': [
-             'http://www.oregongeology.org/arcgis/services/Public/ORPhysicalSamples/MapServer/WMSServer?version=1.3.0&styles=&format=png&CRS=EPSG:3857&bbox={bbox-epsg-3857}&request=GetMap&transparent=true&service=WMS&width=256&height=256&layers=0'
-         ],
-         'tileSize': 256
-    });
-    map.addLayer({
-         'id': 'wms-test-layer',
-         'type': 'raster',
-         'source': 'wms-test',
-         'paint': {
-            "raster-opacity": 0.8,
-            'raster-contrast': 0.8
-         }
-    });
-
     map.addSource('neighborhood', { type: 'geojson', data: 'http://gis.pdx.opendata.arcgis.com/datasets/c11815647b3949faa20b16cf50ab214d_125.geojson' });
     map.addLayer({
         "id": "neighborhood",
         "type": "fill",
         "source": "neighborhood",
         "layout": {
-            "visibility": 'none'
-        },
-        "paint": {
-            'fill-color': '#088',
-            'fill-opacity': 0.8
-        }
-    });
-
-    map.addSource('city-boundaries', { type: 'geojson', data: 'http://gis.pdx.opendata.arcgis.com/datasets/470aa3de09244de4a3a94150b86a648b_10.geojson' });
-    map.addLayer({
-        "id": "city-boundaries",
-        "type": "fill",
-        "source": "city-boundaries",
-        "layout": {
             "visibility": 'visible'
         },
         "paint": {
-            'fill-color': '#df6b6b',
+            'fill-color': '#088',
             'fill-opacity': 0.8
         }
     });
@@ -71,6 +39,37 @@ map.on('load', function () {
             "line-width": 3,
             "line-dasharray": [4,4],
         }
+    });
+
+    map.addSource('city-boundaries', { type: 'geojson', data: 'http://gis.pdx.opendata.arcgis.com/datasets/470aa3de09244de4a3a94150b86a648b_10.geojson' });
+    map.addLayer({
+        "id": "city-boundaries",
+        "type": "fill",
+        "source": "city-boundaries",
+        "layout": {
+            "visibility": 'visible'
+        },
+        "paint": {
+            'fill-color': '#9c58db',
+            'fill-opacity': 0.9
+        }
+    });
+
+    map.addSource('wms-test', {
+         'type': 'raster',
+         'tiles': [
+             'http://www.oregongeology.org/arcgis/services/Public/ORPhysicalSamples/MapServer/WMSServer?version=1.3.0&styles=&format=png&CRS=EPSG:3857&bbox={bbox-epsg-3857}&request=GetMap&transparent=true&service=WMS&width=256&height=256&layers=0'
+         ],
+         'tileSize': 256
+    });
+    map.addLayer({
+         'id': 'wms-test-layer',
+         'type': 'raster',
+         'source': 'wms-test',
+         'paint': {
+            "raster-opacity": 0.8,
+            'raster-contrast': 0.8
+         }
     });
 
     map.addSource('airy', {
