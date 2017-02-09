@@ -57,9 +57,10 @@ Allow users to interactively organize and reposition different map layers
 
      ];
      ```
+
 - ##### Instantiate Layer Tree
-  ```javascript
-   map.addControl(new LayerTree({
-        layers: layers
-   }, 'bottom-left')
-  ```
+     ```javascript
+       map.addControl(new LayerTree({
+            layers: layers
+       }, 'bottom-left')
+    ```
