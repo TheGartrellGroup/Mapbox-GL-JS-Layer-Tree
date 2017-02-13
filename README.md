@@ -1,5 +1,5 @@
 # Mapbox GL JS Layer Tree
-##### Allow users to interactively organize and reposition different map layers.
+#### Allow users to interactively organize and reposition different map layers.
 
 
 ### Install:
@@ -71,6 +71,6 @@
     ```
 
 ### Notes:
-- ##### Initial construction of your own layers (app.js/map.js or whatever) must follow these set of rules:
+- Initial construction of your own layers (app.js/map.js or whatever) must follow these set of rules:
   - Layers within the same directory **must** be configured/added together
   - For example: Layer A and Layer C can't be in of the same layer tree directory - if Layer B is *not* within the same directory and added as a mapLayer prior to Layer C being added.
