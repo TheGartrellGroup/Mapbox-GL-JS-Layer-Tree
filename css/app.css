@@ -13,7 +13,8 @@ body {
     padding-top: 2px;
 }
 
-#wms-test-layer img{
+#airports img{
     height: 15px;
     width: 15px;
+    -webkit-text-stroke: 1px #FFF;
 }

@@ -227,7 +227,8 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
                 if (mapLayer.type === 'fill' && mapSource.type === 'geojson') {
                     var fillColor = map.getPaintProperty(id, 'fill-color') || '';
                     var fillOpacity = map.getPaintProperty(id, 'fill-opacity') || '';
-                    var faClass = "<i class='fa geojson-polygon' aria-hidden='true' style='color:"+ fillColor +";opacity:"+ fillOpacity+";'></i>";
+                    var polyOutline = map.getPaintProperty(id, 'fill-outline-color') || '';
+                    var faClass = "<i class='fa geojson-polygon' aria-hidden='true' style='color:"+ fillColor +";opacity:"+ fillOpacity+";-webkit-text-stroke: 1px "+ polyOutline+";'></i>";
 
                 } else if (mapLayer.type === 'line' && mapSource.type === 'geojson') {
                     var lineColor = map.getPaintProperty(id, 'line-color') || '';
@@ -237,6 +238,10 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
                     } else {
                         var faClass = "<i class='fa geojson-line-solid' aria-hidden='true' style='color:"+ lineColor +";'></i>";
                     }
+                } else if (mapLayer.type === 'circle' && mapSource.type === 'geojson') {
+                    var fillColor = map.getPaintProperty(id, 'circle-color') || '';
+                    var circleOutline = map.getPaintProperty(id, 'circle-stroke-color') || '';
+                    var faClass = "<i class='fa geojson-circle' aria-hidden='true' style='color:"+ fillColor +";-webkit-text-stroke: 1px "+ circleOutline+";'></i>";
                 }
                 $(lyrElm + ' span.name').before(faClass);
             } else {

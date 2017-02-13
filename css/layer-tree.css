@@ -60,6 +60,10 @@
     content: "\f0c8";
 }
 
+.geojson-circle:before {
+    content: "\f111";
+}
+
 .geojson-line-solid:before {
     content: "\f068";
 }

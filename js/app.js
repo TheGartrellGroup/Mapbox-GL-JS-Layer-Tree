@@ -2,57 +2,58 @@ mapboxgl.accessToken = '';
 
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/light-v9',
-    center: [-122.595, 45.589],
-    zoom: 10
+    style: 'mapbox://styles/mapbox/streets-v9',
+    center: [-95.9980, 41.2524],
+    zoom: 4
 });
 
 map.on('load', function () {
 
-    map.addSource('boundingBox', { type: 'geojson', data: 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_wgs84_bounding_box.geojson' });
+    map.addSource('land', { type: 'geojson', data: 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_land.geojson' });
     map.addLayer({
-        "id": "bounding-box",
+        "id": "land",
         "type": "fill",
-        "source": "boundingBox",
+        "source": "land",
         "layout": {
             "visibility": 'visible'
         },
         "paint": {
-            'fill-color': '#088',
+            'fill-color': '#a89b97',
             'fill-opacity': 0.8
         }
     });
 
-    map.addSource('city-boundaries', { type: 'geojson', data: 'https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/portland.geojson' });
+    map.addSource('state-boundaries', { type: 'geojson', data: 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_admin_1_states_provinces_shp.geojson' });
     map.addLayer({
-        "id": "city-boundaries",
+        "id": "state-boundaries",
         "type": "fill",
-        "source": "city-boundaries",
+        "source": "state-boundaries",
         "layout": {
             "visibility": 'visible'
         },
         "paint": {
-            'fill-color': '#d65353',
-            'fill-opacity': 0.8
+            'fill-color': '#CEE5C2',
+            'fill-opacity': 0.8,
+            'fill-outline-color': '#2b2424'
         }
     });
 
-    map.addSource('wms-test', {
-         'type': 'raster',
-         'tiles': [
-             'http://www.oregongeology.org/arcgis/services/Public/ORPhysicalSamples/MapServer/WMSServer?version=1.3.0&styles=&format=png&CRS=EPSG:3857&bbox={bbox-epsg-3857}&request=GetMap&transparent=true&service=WMS&width=256&height=256&layers=0'
-         ],
-         'tileSize': 256
-    });
+    map.addSource('elevation', { type: 'geojson', data: 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_geography_regions_elevation_points.geojson' });
     map.addLayer({
-         'id': 'wms-test-layer',
-         'type': 'raster',
-         'source': 'wms-test',
-         'paint': {
-            "raster-opacity": 0.8,
-            'raster-contrast': 0.8
-         }
+        "id": "elevation-points",
+        "type": "circle",
+        "source": "elevation",
+        "layout": {
+            "visibility": 'visible'
+        },
+        "paint": {
+            'circle-color': '#eae00b',
+            'circle-opacity': 0.8,
+            'circle-stroke-color': '#2b2424',
+            'circle-stroke-width': 1
+        }
     });
+
 
     map.addSource('railroads', { 'type': 'geojson', 'data': 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_10m_railroads_north_america.geojson'});
     map.addLayer({
@@ -63,72 +64,46 @@ map.on('load', function () {
             'visibility': 'visible'
         },
         "paint": {
-            "line-color": "#dde1e1",
+            "line-color": "#c7515f",
             "line-width": 3,
             "line-dasharray": [4,4],
         }
     });
 
-    // map.addSource('airy', {
-    //     'type': 'geojson',
-    //     'data': 'data/PORT.elec_airfield_light.json'
-    // });
+    map.addSource('airports', { type: 'geojson', data: 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_10m_airports.geojson' });
+    map.addLayer({
+        "id": "airports",
+        "type": "symbol",
+        "source": "airports",
+        "layout": {
+            "visibility": 'visible',
+            'icon-image': 'airport-11'
 
-    // map.addLayer({
-    //     "id": "airlights",
-    //     "type": "symbol",
-    //     "source": "airy",
-    //     "layout": {
-    //         "icon-image": "Electric-Airfield-Lights_11",
-    //         'visibility': 'visible'
-    //     }
-    // });
-    // map.setFilter('airlights', ['==', 'airfield_light_type_cd', 'Runway Edge Light']);
-
-    // map.addLayer({
-    //     "id": "act-twy-edge",
-    //     "type": "symbol",
-    //     "source": "airy",
-    //     "layout": {
-    //         "icon-image": "active-twy-edge_11",
-    //         'visibility': 'visible'
-    //     }
-    // });
-    // map.setFilter('act-twy-edge', ['==', 'airfield_light_type_cd', 'Taxiway Edge Light']);
-
-    // map.addLayer({
-    //     "id": "act-twy-center",
-    //     "type": "symbol",
-    //     "source": "airy",
-    //     "layout": {
-    //         "icon-image": "active-twy-center_15",
-    //         'visibility': 'visible'
-    //     }
-    // });
-    // map.setFilter('act-twy-center', ['==', 'airfield_light_type_cd', 'Taxiway Centerline L852c Light']);
+        },
+        "paint": {}
+    });
 
 });
 
 var layers =
 [
     {
-        'name': 'Bounding Box',
-        'id': 'bounding-box',
-        'source': 'boundingBox',
+        'name': 'Land',
+        'id': 'land',
+        'source': 'land',
         'directory': 'Misc',
     },
     {
-        'name': 'City Boundaries',
-        'id': 'city-boundaries',
-        'source': "city-boundaries",
+        'name': 'State Boundaries',
+        'id': 'state-boundaries',
+        'source': "state-boundaries",
         'directory': 'Misc',
     },
     {
-        'name': 'Random WMS Stars',
-        'id': 'wms-test-layer',
-        'source': 'wms-test',
-        'directory': 'WMS',
-        'icon': 'http://clipartist.net/links/clipartist.net/yellow_star-1979px.png'
+        'name': 'Elevated Points',
+        'id': 'elevation-points',
+        'source': 'elevation',
+        'directory': 'Misc',
     },
     {
         'name': 'Railroads',
@@ -136,27 +111,13 @@ var layers =
         'source': 'railroads',
         'directory': 'Transportation',
     },
-    // {
-    //     'name': 'Airlights',
-    //     'id': 'airlights',
-    //     'source': "airy",
-    //     'directory': 'Port',
-    //     'icon': 'icons/Electric-Airfield-Lights_15.svg'
-    // },
-    // {
-    //     'name': 'Act Twy Edge',
-    //     'id': 'act-twy-edge',
-    //     'source': "airy",
-    //     'directory': 'Port',
-    //     'icon': 'icons/active-twy-edge_15.svg'
-    // },
-    // {
-    //     'name': 'Act Twy Center',
-    //     'id': 'act-twy-center',
-    //     'source': "airy",
-    //     'directory': 'Port',
-    //     'icon': 'icons/active-twy-center_11.svg'
-    // }
+    {
+        'name': 'Airports',
+        'id': 'airports',
+        'source': 'airports',
+        'directory': 'Transportation',
+        'icon': 'icons/airplane.svg'
+    },
 
 ];
 
@@ -185,4 +146,4 @@ var layers =
 
 // Add zoom and rotation controls to the map.
 map.addControl(new mapboxgl.NavigationControl());
-map.addControl(new LayerTree({layers: layers, basemaps: basemaps}), 'bottom-left');
+map.addControl(new LayerTree({layers: layers}), 'bottom-left');
