@@ -4,8 +4,7 @@ var map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/light-v9',
     center: [-122.595, 45.589],
-    zoom: 10,
-    attributionControl: false,
+    zoom: 10
 });
 
 map.on('load', function () {
@@ -33,7 +32,7 @@ map.on('load', function () {
             "visibility": 'visible'
         },
         "paint": {
-            'fill-color': '#9c58db',
+            'fill-color': '#d65353',
             'fill-opacity': 0.8
         }
     });
@@ -55,43 +54,58 @@ map.on('load', function () {
          }
     });
 
-    map.addSource('airy', {
-        'type': 'geojson',
-        'data': 'data/PORT.elec_airfield_light.json'
-    });
-
+    map.addSource('railroads', { 'type': 'geojson', 'data': 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_10m_railroads_north_america.geojson'});
     map.addLayer({
-        "id": "airlights",
-        "type": "symbol",
-        "source": "airy",
+        "id": "railroads",
+        "type": "line",
+        "source": "railroads",
         "layout": {
-            "icon-image": "Electric-Airfield-Lights_11",
             'visibility': 'visible'
+        },
+        "paint": {
+            "line-color": "#dde1e1",
+            "line-width": 3,
+            "line-dasharray": [4,4],
         }
     });
-    map.setFilter('airlights', ['==', 'airfield_light_type_cd', 'Runway Edge Light']);
 
-    map.addLayer({
-        "id": "act-twy-edge",
-        "type": "symbol",
-        "source": "airy",
-        "layout": {
-            "icon-image": "active-twy-edge_11",
-            'visibility': 'visible'
-        }
-    });
-    map.setFilter('act-twy-edge', ['==', 'airfield_light_type_cd', 'Taxiway Edge Light']);
+    // map.addSource('airy', {
+    //     'type': 'geojson',
+    //     'data': 'data/PORT.elec_airfield_light.json'
+    // });
 
-    map.addLayer({
-        "id": "act-twy-center",
-        "type": "symbol",
-        "source": "airy",
-        "layout": {
-            "icon-image": "active-twy-center_15",
-            'visibility': 'visible'
-        }
-    });
-    map.setFilter('act-twy-center', ['==', 'airfield_light_type_cd', 'Taxiway Centerline L852c Light']);
+    // map.addLayer({
+    //     "id": "airlights",
+    //     "type": "symbol",
+    //     "source": "airy",
+    //     "layout": {
+    //         "icon-image": "Electric-Airfield-Lights_11",
+    //         'visibility': 'visible'
+    //     }
+    // });
+    // map.setFilter('airlights', ['==', 'airfield_light_type_cd', 'Runway Edge Light']);
+
+    // map.addLayer({
+    //     "id": "act-twy-edge",
+    //     "type": "symbol",
+    //     "source": "airy",
+    //     "layout": {
+    //         "icon-image": "active-twy-edge_11",
+    //         'visibility': 'visible'
+    //     }
+    // });
+    // map.setFilter('act-twy-edge', ['==', 'airfield_light_type_cd', 'Taxiway Edge Light']);
+
+    // map.addLayer({
+    //     "id": "act-twy-center",
+    //     "type": "symbol",
+    //     "source": "airy",
+    //     "layout": {
+    //         "icon-image": "active-twy-center_15",
+    //         'visibility': 'visible'
+    //     }
+    // });
+    // map.setFilter('act-twy-center', ['==', 'airfield_light_type_cd', 'Taxiway Centerline L852c Light']);
 
 });
 
@@ -117,51 +131,57 @@ var layers =
         'icon': 'http://clipartist.net/links/clipartist.net/yellow_star-1979px.png'
     },
     {
-        'name': 'Airlights',
-        'id': 'airlights',
-        'source': "airy",
-        'directory': 'Port',
-        'icon': 'icons/Electric-Airfield-Lights_15.svg'
+        'name': 'Railroads',
+        'id': 'railroads',
+        'source': 'railroads',
+        'directory': 'Transportation',
     },
-    {
-        'name': 'Act Twy Edge',
-        'id': 'act-twy-edge',
-        'source': "airy",
-        'directory': 'Port',
-        'icon': 'icons/active-twy-edge_15.svg'
-    },
-    {
-        'name': 'Act Twy Center',
-        'id': 'act-twy-center',
-        'source': "airy",
-        'directory': 'Port',
-        'icon': 'icons/active-twy-center_11.svg'
-    }
+    // {
+    //     'name': 'Airlights',
+    //     'id': 'airlights',
+    //     'source': "airy",
+    //     'directory': 'Port',
+    //     'icon': 'icons/Electric-Airfield-Lights_15.svg'
+    // },
+    // {
+    //     'name': 'Act Twy Edge',
+    //     'id': 'act-twy-edge',
+    //     'source': "airy",
+    //     'directory': 'Port',
+    //     'icon': 'icons/active-twy-edge_15.svg'
+    // },
+    // {
+    //     'name': 'Act Twy Center',
+    //     'id': 'act-twy-center',
+    //     'source': "airy",
+    //     'directory': 'Port',
+    //     'icon': 'icons/active-twy-center_11.svg'
+    // }
 
 ];
 
-var basemaps =
-[
-    {
-        'name': 'Streets',
-        'id': 'streets',
-        'source': 'mapbox://styles/mapbox/streets-v9',
-        'directory': 'Base Maps',
-    },
-    {
-        'name': 'Basic',
-        'id': 'basic',
-        'source': 'mapbox://styles/mapbox/basic-v9',
-        'directory': 'Base Maps',
-    },
-    {
-        'name': 'Bright',
-        'id': 'bright',
-        'source': 'mapbox://styles/mapbox/light-v9',
-        'directory': 'Base Maps',
-    }
+// var basemaps =
+// [
+//     {
+//         'name': 'Streets',
+//         'id': 'streets',
+//         'source': 'mapbox://styles/mapbox/streets-v9',
+//         'directory': 'Base Maps',
+//     },
+//     {
+//         'name': 'Basic',
+//         'id': 'basic',
+//         'source': 'mapbox://styles/mapbox/basic-v9',
+//         'directory': 'Base Maps',
+//     },
+//     {
+//         'name': 'Bright',
+//         'id': 'bright',
+//         'source': 'mapbox://styles/mapbox/light-v9',
+//         'directory': 'Base Maps',
+//     }
 
-];
+// ];
 
 // Add zoom and rotation controls to the map.
 map.addControl(new mapboxgl.NavigationControl());

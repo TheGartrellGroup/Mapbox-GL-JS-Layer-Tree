@@ -1,16 +1,21 @@
-# Port-Layer-Tree
-Allow users to interactively organize and reposition different map layers
+# Mapbox GL JS Layer Tree
+##### Allow users to interactively organize and reposition different map layers.
 
 
-### Install
+### Install:
 - [Install Yarn](https://yarnpkg.com/docs/install)
   - Note: You can install yarn via npm if you wish, but it's not ideal - `npm install -g yarn`
 - `yarn` to install current set of dependencies
   - Additional dependencies can be installed via `yarn add [packagename]`
 - `gulp` to develop locally (includes a local server and watchers on index.html, js, and css files)
+- `gulp build` will compile/minify required javascript and default layer-tree.css.
 
 
-### Usage
+### Dependencies:
+- JQuery, JQuery UI Sortable Module, and Font-Awesome are all currently required.
+  - Font-Awesome CSS should be added in your HTML `<head>`
+
+### Usage:
 - #### Create a layer config array:
     - **name** - to be displayed as the layer name in Legend
     - **id** - layer id
@@ -64,3 +69,8 @@ Allow users to interactively organize and reposition different map layers
             layers: layers
        }, 'bottom-left')
     ```
+
+### Notes:
+- ##### Initial construction of your own layers (app.js/map.js or whatever) must follow these set of rules:
+  - Layers within the same directory **must** be configured/added together
+  - For example: Layer A and Layer C can't be in of the same layer tree directory - if Layer B is *not* within the same directory and added as a mapLayer prior to Layer C being added.
