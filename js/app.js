@@ -10,11 +10,11 @@ var map = new mapboxgl.Map({
 
 map.on('load', function () {
 
-    map.addSource('neighborhood', { type: 'geojson', data: 'http://gis.pdx.opendata.arcgis.com/datasets/c11815647b3949faa20b16cf50ab214d_125.geojson' });
+    map.addSource('boundingBox', { type: 'geojson', data: 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_wgs84_bounding_box.geojson' });
     map.addLayer({
-        "id": "neighborhood",
+        "id": "bounding-box",
         "type": "fill",
-        "source": "neighborhood",
+        "source": "boundingBox",
         "layout": {
             "visibility": 'visible'
         },
@@ -24,24 +24,7 @@ map.on('load', function () {
         }
     });
 
-    map.addSource('snowy', { type: 'geojson', data: 'http://gis.pdx.opendata.arcgis.com/datasets/902bba133844409e9307807e85c847a0_69.geojson' });
-    map.addLayer({
-        "id": "snow-routes",
-        "type": "line",
-        "source": "snowy",
-        "layout": {
-            "visibility": "none",
-            "line-join": "round",
-            "line-cap": "round"
-        },
-        "paint": {
-            "line-color": "#d4d437",
-            "line-width": 3,
-            "line-dasharray": [4,4],
-        }
-    });
-
-    map.addSource('city-boundaries', { type: 'geojson', data: 'http://gis.pdx.opendata.arcgis.com/datasets/470aa3de09244de4a3a94150b86a648b_10.geojson' });
+    map.addSource('city-boundaries', { type: 'geojson', data: 'https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/portland.geojson' });
     map.addLayer({
         "id": "city-boundaries",
         "type": "fill",
@@ -51,7 +34,7 @@ map.on('load', function () {
         },
         "paint": {
             'fill-color': '#9c58db',
-            'fill-opacity': 0.9
+            'fill-opacity': 0.8
         }
     });
 
@@ -115,49 +98,43 @@ map.on('load', function () {
 var layers =
 [
     {
+        'name': 'Bounding Box',
+        'id': 'bounding-box',
+        'source': 'boundingBox',
+        'directory': 'Misc',
+    },
+    {
         'name': 'City Boundaries',
         'id': 'city-boundaries',
-        'source': 'city-boundaries',
-        'directory': 'Metro',
+        'source': "city-boundaries",
+        'directory': 'Misc',
     },
     {
         'name': 'Random WMS Stars',
         'id': 'wms-test-layer',
         'source': 'wms-test',
-        'directory': 'Metro',
+        'directory': 'WMS',
         'icon': 'http://clipartist.net/links/clipartist.net/yellow_star-1979px.png'
-    },
-    {
-        'name': 'Snow Routes',
-        'id': 'snow-routes',
-        'source': "snowy",
-        'directory': 'Community',
-    },
-    {
-        'name': 'Neighborhood',
-        'id': 'neighborhood',
-        'source': "neighborhood",
-        'directory': 'Community',
     },
     {
         'name': 'Airlights',
         'id': 'airlights',
         'source': "airy",
-        'directory': 'Environment',
+        'directory': 'Port',
         'icon': 'icons/Electric-Airfield-Lights_15.svg'
     },
     {
         'name': 'Act Twy Edge',
         'id': 'act-twy-edge',
         'source': "airy",
-        'directory': 'Environment',
+        'directory': 'Port',
         'icon': 'icons/active-twy-edge_15.svg'
     },
     {
         'name': 'Act Twy Center',
         'id': 'act-twy-center',
         'source': "airy",
-        'directory': 'Environment',
+        'directory': 'Port',
         'icon': 'icons/active-twy-center_11.svg'
     }
 
