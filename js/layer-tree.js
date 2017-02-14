@@ -325,7 +325,7 @@ LayerTree.prototype.enableSortHandler = function(map) {
 
             //move layer order
             orderArray.sort(function(a, b) {
-                if (b.newOrder > a.originalOrder) {
+                if (b.newOrder > a.newOrder) {
                     map.moveLayer(a.id, b.id);
                 } else {
                     map.moveLayer(b.id, a.id);
