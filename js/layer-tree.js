@@ -46,7 +46,7 @@ LayerTree.prototype.getLayers = function(map) {
         }
     };
 
-    map.on('sourcedataloading', function(e) {
+    var loadingSource = function(e) {
         var lyr = layers.filter(function(layer) {
             return layer.source === e.sourceId;
         });
@@ -62,10 +62,13 @@ LayerTree.prototype.getLayers = function(map) {
         }
 
         if (sourceCollection.length === numSources.length) {
+            map.off('sourcedataloading', loadingSource)
             //_this.loadBasemaps(map, _this.options.basemaps);
             _this.enableSortHandler(map, _this.loadComplete(_this, map, sourceCollection));
         }
-    });
+    }
+
+    map.on('sourcedataloading', loadingSource);
 }
 
 //callback to append layer to legend
@@ -337,11 +340,10 @@ LayerTree.prototype.enableSortHandler = function(map) {
 
 //callback to check if map is loaded
 LayerTree.prototype.loadComplete = function(_that, map, sourceCollection) {
-    var mapLoaded = function(updateLegend) {
+
+    var mapLoaded = function() {
         if (map.loaded()) {
-
             _that.updateLegend(map, sourceCollection, _that.options.layers);
-
             $('.mapboxgl-ctrl.legend-container').show();
             map.off('render', mapLoaded)
         }
@@ -362,7 +364,6 @@ LayerTree.prototype.loadComplete = function(_that, map, sourceCollection) {
             }
         };
     }
-
 
     map.on('render', mapLoaded);
     map.on('moveend', moveEnd);
