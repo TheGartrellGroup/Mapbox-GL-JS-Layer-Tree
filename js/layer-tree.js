@@ -344,6 +344,7 @@ LayerTree.prototype.loadComplete = function(_that, map, sourceCollection) {
     var mapLoaded = function() {
         if (map.loaded()) {
             _that.updateLegend(map, sourceCollection, _that.options.layers);
+            $('.mapboxgl-ctrl.legend-container').trigger('show');
             $('.mapboxgl-ctrl.legend-container').show();
             map.off('render', mapLoaded)
         }
