@@ -173,15 +173,9 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
         if ($(this).is(':checked')) {
             map.setLayoutProperty(lyrId, 'visibility', 'visible');
 
-            map.on('render', function() {
-                if (map.loaded() && map.getLayoutProperty(lyrId, 'visibility') === 'visbile') {
-                    var features = map.queryRenderedFeatures({layers:[lyrId]});
-                    if (features === undefined || features.length === 0) {
-                        $('#'+lyrId).addClass('ghost')
-                    } else {
-                        $('#'+lyrId).removeClass('ghost');
-                    }
-                }
+            map.on('render', function(e) {
+                var zoomLevel = map.getZoom();
+                zoomHandler(lyrId, zoomLevel);
             })
         } else {
             map.setLayoutProperty(lyrId, 'visibility', 'none');
@@ -207,12 +201,16 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
         lyrArray.detach().appendTo(dir);
     }
 
-    //activate checkbox if layer is visible
+    //activate checkbox if layer is visible and add ghost class if neccessary
     function visible(map, id, lyrElm) {
         var visibility = map.getLayoutProperty(id, 'visibility');
+        var zoomLevel = map.getZoom();
+
         if (visibility !== 'none') {
             $(lyrElm + ' input').prop("checked", true);
         }
+        //toggle ghost class
+        zoomHandler(id, zoomLevel)
     }
 
     //assign legend icons
@@ -350,24 +348,18 @@ LayerTree.prototype.loadComplete = function(_that, map, sourceCollection) {
         }
     }
 
-    var moveEnd = function(e) {
+    var zoomEnd = function(e) {
+        var zoomLevel = map.getZoom();
         var lyrsArray = [];
         for (var i = map.lyrs.length - 1; i >= 0; i--) {
             var lyrID = map.lyrs[i].id;
+            zoomHandler(lyrID, zoomLevel);
 
-            if ($('#'+ lyrID + ' .toggle-layer').prop('checked')) {
-                var features = map.queryRenderedFeatures({layers:[lyrID]});
-                if (features === undefined || features.length === 0) {
-                    $('#'+lyrID).addClass('ghost')
-                } else {
-                    $('#'+lyrID).removeClass('ghost');
-                }
-            }
-        };
+        }
     }
 
     map.on('render', mapLoaded);
-    map.on('moveend', moveEnd);
+    map.on('zoomend', zoomEnd);
 }
 
 //find layer index location
@@ -388,4 +380,24 @@ function findLayerIndex(allLayers, ourLayers, indexVal) {
 
     };
     return index;
+}
+
+function zoomHandler(lyrID, zoomLevel) {
+    var lyr = map.getLayer(lyrID);
+
+    function toggleGhost (g) {
+        g === 'off' ? $('#'+lyrID).removeClass('ghost') : $('#'+lyrID).addClass('ghost');
+    }
+
+    if (lyr.minzoom || lyr.maxzoom && $('#'+ lyrID + ' .toggle-layer').prop('checked')) {
+        if (lyr.minzoom && lyr.maxzoom) {
+            zoomLevel >= lyr.minzoom && zoomLevel <= lyr.maxzoom ? toggleGhost('off') : toggleGhost('on')
+        } else if (lyr.minzoom) {
+            zoomLevel >= lyr.minzoom ? toggleGhost('off') : toggleGhost('on')
+        } else if (lyr.maxzoom) {
+            zoomLevel <= lyr.maxzoom ? toggleGhost('off') : toggleGhost('on')
+        } else {
+            toggleGhost('on');
+        }
+    }
 }
