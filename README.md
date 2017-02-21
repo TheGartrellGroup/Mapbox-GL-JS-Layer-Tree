@@ -13,7 +13,8 @@
 
 
 ### Dependencies:
-- JQuery, JQuery UI Sortable Module, and Font-Awesome are all currently required.
+- jQuery, jQuery UI Sortable Module, and Font-Awesome are all currently required.
+  - jQuery and jQuery UI-Sortable are both included within the compiled `dist/js/scripts.min.js`
   - Font-Awesome CSS should be added in your HTML `<head>`
 
 ### Usage:
@@ -74,4 +75,4 @@
 ### Notes:
 - Initial construction of your own layers (app.js/map.js or whatever) must follow these set of rules:
   - Layers within the same directory **must** be configured/added together
-  - For example: Layer A and Layer C can't be in of the same layer tree directory - if Layer B is *not* within the same directory and added as a mapLayer prior to Layer C being added.
+  - For example: Layer A and Layer C can not be of the same directory - if Layer B is also *not* within the same directory and has been added as a mapLayer prior to Layer C being added.
