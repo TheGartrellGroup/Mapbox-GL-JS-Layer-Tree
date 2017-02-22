@@ -151,6 +151,7 @@ LayerTree.prototype.loadBasemaps = function(map, basemaps) {
 LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
     var layers = map.getStyle().layers;
     var arrayObj = [];
+    var directoryOptions = this.options.directoryOptions
 
     //update legend once layers are fully loaded
     for (var i = lyrs.length - 1; i >= 0; i--) {
@@ -187,8 +188,7 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
         $(this).find('i').toggleClass('toggle-directory-open toggle-directory-close');
     });
 
-    sortLoadedDirectories();
-
+    sortLoadedDirectories(directoryOptions);
 
     //sort legends based on initial on layer index
     function sortLoadedLayers(lyrArray, dir) {
@@ -253,9 +253,11 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
     }
 
     //sort initial loading of directories
-    function sortLoadedDirectories() {
+    function sortLoadedDirectories(directoryOptions) {
+        var directoryOptions = directoryOptions
         var layerDirectories = $('.layer-directory');
         var legend = $('#mapboxgl-legend');
+
         $.each(layerDirectories, function(i) {
             //get the highest index value for each directory
             var highestIndex = $(this).children('.layer-item:first');
@@ -263,6 +265,19 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
 
             //apply value to directory
             $(this).attr('initial-index', indexVal);
+
+            //initial toggle open or close of directory
+            if (directoryOptions && directoryOptions.length) {
+                var dirId = this.id
+                var dir = $.grep(directoryOptions, function(i) {
+                    return dirId === i.name.replace(/\s+/g, '-').toLowerCase();
+                });
+
+                if (dir.length && dir[0].hasOwnProperty('open') && dir[0].open === false) {
+                    $('#'+dirId + '> .directory-name').click();
+                }
+            }
+
         })
 
         sortLoadedLayers(layerDirectories, legend);
