@@ -41,6 +41,19 @@
     margin-left: 5px;
 }
 
+.layer-item > img, .child-layer > img {
+    height: 15px;
+    width: 15px;
+}
+
+.child-layer {
+    padding-left: 30px;
+    font-size: 13px;
+}
+
+.child-layer span.child-name {
+    padding-left: 5px;
+}
 /* .grb is class for all sortable components */
 .grb {
     cursor: move; /* fallback if grab cursor is unsupported */

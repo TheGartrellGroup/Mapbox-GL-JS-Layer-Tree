@@ -120,6 +120,7 @@ LayerTree.prototype.appendLayerToLegend = function(map, mapLyrObj, lyr) {
         var childIds = [];
         for (var i = childLayers.length - 1; i >= 0; i--) {
             childIds.push(childLayers[i].id);
+            $('#' + layerId).append("<div id='" + childLayers[i].id + "' class='child-layer'><span class='child-name'>" + childLayers[i].name + "</span></div>");
         };
         //add childLayer ids to elm
         inputElm.attr('childLayers', childIds);
@@ -219,6 +220,7 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
                     map.setLayoutProperty(childIds[i], 'visibility', 'none');
                 }
             };
+        //regular layers
         } else {
             if ($(this).is(':checked')) {
                 map.setLayoutProperty(lyrId, 'visibility', 'visible');
@@ -304,30 +306,67 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
                 //is there a default icon in the config?
                 if (!obj[0].hasOwnProperty('icon')) {
                     if (mapLayer.type === 'fill' && mapSource.type === 'geojson') {
-                        var fillColor = map.getPaintProperty(id, 'fill-color') || '';
-                        var fillOpacity = map.getPaintProperty(id, 'fill-opacity') || '';
-                        var polyOutline = map.getPaintProperty(id, 'fill-outline-color') || '';
-                        var faClass = "<i class='fa geojson-polygon' aria-hidden='true' style='color:"+ fillColor +";opacity:"+ fillOpacity+";-webkit-text-stroke: 1px "+ polyOutline+";'></i>";
-
+                        var faClass = geojsonFill(id);
                     } else if (mapLayer.type === 'line' && mapSource.type === 'geojson') {
-                        var lineColor = map.getPaintProperty(id, 'line-color') || '';
-
-                        if (map.getPaintProperty(id, 'line-dasharray')) {
-                            var faClass = "<i class='fa geojson-line-dashed' aria-hidden='true' style='color:"+ lineColor +";'></i>";
-                        } else {
-                            var faClass = "<i class='fa geojson-line-solid' aria-hidden='true' style='color:"+ lineColor +";'></i>";
-                        }
+                        var faClass = geojsonLine(id);
                     } else if (mapLayer.type === 'circle' && mapSource.type === 'geojson') {
-                        var fillColor = map.getPaintProperty(id, 'circle-color') || '';
-                        var circleOutline = map.getPaintProperty(id, 'circle-stroke-color') || '';
-                        var faClass = "<i class='fa geojson-circle' aria-hidden='true' style='color:"+ fillColor +";-webkit-text-stroke: 1px "+ circleOutline+";'></i>";
+                        var faClass = geojsonCircle(id);
                     }
                     $(lyrElm + ' span.name').before(faClass);
                 } else {
                     var imgClass = "<img src='" + obj[0].icon + "' alt='" + obj[0].id + "'>";
                     $(lyrElm + ' span.name').before(imgClass);
                 }
+            } else if (obj[0].hasOwnProperty('layerGroup')) {
+                if (obj[0].hasOwnProperty('icon')) {
+                    var imgClass = "<img src='" + obj[0].icon + "' alt='" + obj[0].id + "'>";
+                    $(lyrElm + ' span.name').before(imgClass);
+                }
+
+                var layerGroup = obj[0].layerGroup;
+                for (var i = 0; i < layerGroup.length; i++) {
+                    var mapSource = map.getSource(layerGroup[i].source);
+                    var id = layerGroup[i].id;
+                    var mapLayer = map.getLayer(id);
+
+                    if (!layerGroup[i].hasOwnProperty('icon')) {
+                        if (mapLayer.type === 'fill' && mapSource.type === 'geojson') {
+                            var faClass = geojsonFill(id);
+                        } else if (mapLayer.type === 'line' && mapSource.type === 'geojson') {
+                            var faClass = geojsonLine(id);
+                        } else if (mapLayer.type === 'circle' && mapSource.type === 'geojson') {
+                            var faClass = geojsonCircle(id);
+                        }
+                        $('#' + id + ' span.child-name').before(faClass);
+                    } else {
+                        var imgClass = "<img src='" + layerGroup[i].icon + "' alt='" + id + "'>";
+                        $('#' + id + ' span.child-name').before(imgClass);
+                    }
+                };
             }
+        }
+
+        function geojsonFill(id) {
+            var fillColor = map.getPaintProperty(id, 'fill-color') || '';
+            var fillOpacity = map.getPaintProperty(id, 'fill-opacity') || '';
+            var polyOutline = map.getPaintProperty(id, 'fill-outline-color') || '';
+            return "<i class='fa geojson-polygon' aria-hidden='true' style='color:"+ fillColor +";opacity:"+ fillOpacity+";-webkit-text-stroke: 1px "+ polyOutline+";'></i>";
+        }
+
+        function geojsonLine(id) {
+            var lineColor = map.getPaintProperty(id, 'line-color') || '';
+
+            if (map.getPaintProperty(id, 'line-dasharray')) {
+                return "<i class='fa geojson-line-dashed' aria-hidden='true' style='color:"+ lineColor +";'></i>";
+            } else {
+                return "<i class='fa geojson-line-solid' aria-hidden='true' style='color:"+ lineColor +";'></i>";
+            }
+        }
+
+        function geojsonCircle(id) {
+            var fillColor = map.getPaintProperty(id, 'circle-color') || '';
+            var circleOutline = map.getPaintProperty(id, 'circle-stroke-color') || '';
+            return "<i class='fa geojson-circle' aria-hidden='true' style='color:"+ fillColor +";-webkit-text-stroke: 1px "+ circleOutline+";'></i>";
         }
     }
 
@@ -483,7 +522,7 @@ function zoomHandler(lyrID, zoomLevel) {
         g === 'off' ? $('#'+lyrID).removeClass('ghost') : $('#'+lyrID).addClass('ghost');
     }
 
-    if (lyr.minzoom || lyr.maxzoom && $('#'+ lyrID + ' .toggle-layer').prop('checked')) {
+    if (lyr && lyr.minzoom || lyr.maxzoom && $('#'+ lyrID + ' .toggle-layer').prop('checked')) {
         if (lyr.minzoom && lyr.maxzoom) {
             zoomLevel >= lyr.minzoom && zoomLevel <= lyr.maxzoom ? toggleGhost('off') : toggleGhost('on')
         } else if (lyr.minzoom) {
