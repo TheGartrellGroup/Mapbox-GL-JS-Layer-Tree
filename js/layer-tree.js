@@ -41,21 +41,41 @@ LayerTree.prototype.getLayers = function(map) {
     map.lyrs = layers;
 
     for (var s = layers.length - 1; s >= 0; s--) {
-        if ($.inArray(layers[s].source, numSources) === -1) {
-            numSources.push(layers[s].source)
+        if (layers[s].hasOwnProperty('source') && $.inArray(layers[s].source, numSources) === -1) {
+            numSources.push(layers[s].source);
+        } else if (layers[s].hasOwnProperty('layerGroup')) {
+            //check layerGroups for composite layer sources
+            var layerGroup = layers[s].layerGroup;
+            for (var c = layerGroup.length - 1; c >= 0; c--) {
+                if ($.inArray(layerGroup[c].source, numSources) === -1) {
+                    numSources.push(layerGroup[c].source);
+                }
+            };
         }
     };
 
     var loadingSource = function(e) {
+        var lyrGroupSource;
         var lyr = layers.filter(function(layer) {
-            return layer.source === e.sourceId;
+            if (layer.hasOwnProperty('source')) {
+                return layer.source === e.sourceId;
+            } else if (layer.hasOwnProperty('layerGroup')) {
+                for (var indx = layer.layerGroup.length - 1; indx >= 0; indx--) {
+                    if (layer.layerGroup[indx].source === e.sourceId) {
+                        lyrGroupSource = layer.layerGroup[indx].source;
+                        return lyrGroupSource;
+                    }
+                }
+            }
         });
 
         if (lyr.length) {
             for (var l = lyr.length - 1; l >= 0; l--) {
                 if (lyr[l] === lyr[lyr.length-1]) {
-                    var mapLyrObj = map.getSource(e.sourceId);
-                    sourceCollection.push(mapLyrObj);
+                    if (lyrGroupSource !== undefined || lyrGroupSource !== '' || lyr.hasOwnProperty('source')) {
+                        var mapLyrObj = map.getSource(e.sourceId);
+                        sourceCollection.push(mapLyrObj);
+                   }
                 }
                 _this.appendLayerToLegend(map, mapLyrObj, lyr[l]);
             };
@@ -83,10 +103,26 @@ LayerTree.prototype.appendLayerToLegend = function(map, mapLyrObj, lyr) {
     var layerDiv = "<div id='" + layerId + "' class='layer-item grb'><input class='toggle-layer' type='checkbox'><span class='name'>" + layerName + "</span></div>";
 
     if ($('#' + directoryId).length) {
-        $('#' + directoryId).append(layerDiv);
+        if (!$('#' + layerId).length) {
+            $('#' + directoryId).append(layerDiv);
+        }
     } else {
         $(legendId).append("<div id='" + directoryId + "' class='layer-directory grb'><div class='directory-name'>" + directoryName + "<i class='fa toggle-directory-open' aria-hidden='true'</i></div></div>");
         $('#' + directoryId).append(layerDiv);
+    }
+
+    //add layer-group class to layerGroup 'layer'
+    var inputElm = $('#'+layerId+ ' .toggle-layer');
+    if (lyr.hasOwnProperty('layerGroup') && !inputElm.hasClass('layer-group')) {
+        inputElm.addClass('layer-group');
+
+        var childLayers = lyr.layerGroup;
+        var childIds = [];
+        for (var i = childLayers.length - 1; i >= 0; i--) {
+            childIds.push(childLayers[i].id);
+        };
+        //add childLayer ids to elm
+        inputElm.attr('childLayers', childIds);
     }
 }
 
@@ -164,23 +200,38 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
         $(lyrElm).attr('initial-index', layerIndex);
 
         sortLoadedLayers(lyrArray, dir);
-        visible(map, id, lyrElm);
+        visible(map, id, lyrElm, lyrs);
         addIcons(map, id, lyrs, lyrElm);
     }
 
     $('body').on('click', '.toggle-layer', function() {
         var lyrId = $(this).parent().attr('id');
 
-        if ($(this).is(':checked')) {
-            map.setLayoutProperty(lyrId, 'visibility', 'visible');
 
-            map.on('render', function(e) {
-                var zoomLevel = map.getZoom();
-                zoomHandler(lyrId, zoomLevel);
-            })
+        //layerGroups
+        if ($(this).hasClass('layer-group')) {
+            var $input = $(this);
+            var childIds = $input.attr('childLayers').split(',');
+            for (var i = childIds.length - 1; i >= 0; i--) {
+                if ($input.is(':checked')) {
+                    map.setLayoutProperty(childIds[i], 'visibility', 'visible');
+                } else {
+                    map.setLayoutProperty(childIds[i], 'visibility', 'none');
+                }
+            };
         } else {
-            map.setLayoutProperty(lyrId, 'visibility', 'none');
+            if ($(this).is(':checked')) {
+                map.setLayoutProperty(lyrId, 'visibility', 'visible');
+
+                map.on('render', function(e) {
+                    var zoomLevel = map.getZoom();
+                    zoomHandler(lyrId, zoomLevel);
+                })
+            } else {
+                map.setLayoutProperty(lyrId, 'visibility', 'none');
+            }
         }
+
     });
 
     $('.directory-name').click(function() {
@@ -202,15 +253,41 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
     }
 
     //activate checkbox if layer is visible and add ghost class if neccessary
-    function visible(map, id, lyrElm) {
-        var visibility = map.getLayoutProperty(id, 'visibility');
-        var zoomLevel = map.getZoom();
+    function visible(map, id, lyrElm, lyrs) {
+        if (map.getLayer(id) === undefined) {
+            //check for layerGroups
+            var layerGroup = $.grep(lyrs, function(i) {
+                return id === i.id;
+            });
 
-        if (visibility !== 'none') {
-            $(lyrElm + ' input').prop("checked", true);
+            if (layerGroup.length) {
+                var lyrGroup = layerGroup[0].layerGroup;
+                for (var i = lyrGroup.length - 1; i >= 0; i--) {
+                    adjustLayoutProperties(lyrGroup[i].id, lyrElm, layerGroup);
+                }
+            }
+        } else {
+            adjustLayoutProperties(id, lyrElm);
         }
-        //toggle ghost class
-        zoomHandler(id, zoomLevel)
+
+        function adjustLayoutProperties(id, lyrElm, layerGroup) {
+            var visibility = map.getLayoutProperty(id, 'visibility');
+            var zoomLevel = map.getZoom();
+
+
+            if (lyrGroup === undefined) {
+                if (visibility !== 'none') {
+                    $(lyrElm + ' input').prop("checked", true);
+                }
+                //toggle ghost class
+                zoomHandler(id, zoomLevel)
+            } else {
+                if (visibility !== 'none') {
+                    var grpId = layerGroup[0].id;
+                    $('#'+grpId + ' input').prop("checked", true);
+                }
+            }
+        }
     }
 
     //assign legend icons
@@ -221,33 +298,35 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
 
         if (obj.length) {
             var mapLayer = map.getLayer(id);
-            var mapSource = map.getSource(obj[0].source);
+            if (mapLayer !== undefined) {
+                var mapSource = map.getSource(obj[0].source);
 
-            //is there a default icon in the config?
-            if (!obj[0].hasOwnProperty('icon')) {
-                if (mapLayer.type === 'fill' && mapSource.type === 'geojson') {
-                    var fillColor = map.getPaintProperty(id, 'fill-color') || '';
-                    var fillOpacity = map.getPaintProperty(id, 'fill-opacity') || '';
-                    var polyOutline = map.getPaintProperty(id, 'fill-outline-color') || '';
-                    var faClass = "<i class='fa geojson-polygon' aria-hidden='true' style='color:"+ fillColor +";opacity:"+ fillOpacity+";-webkit-text-stroke: 1px "+ polyOutline+";'></i>";
+                //is there a default icon in the config?
+                if (!obj[0].hasOwnProperty('icon')) {
+                    if (mapLayer.type === 'fill' && mapSource.type === 'geojson') {
+                        var fillColor = map.getPaintProperty(id, 'fill-color') || '';
+                        var fillOpacity = map.getPaintProperty(id, 'fill-opacity') || '';
+                        var polyOutline = map.getPaintProperty(id, 'fill-outline-color') || '';
+                        var faClass = "<i class='fa geojson-polygon' aria-hidden='true' style='color:"+ fillColor +";opacity:"+ fillOpacity+";-webkit-text-stroke: 1px "+ polyOutline+";'></i>";
 
-                } else if (mapLayer.type === 'line' && mapSource.type === 'geojson') {
-                    var lineColor = map.getPaintProperty(id, 'line-color') || '';
+                    } else if (mapLayer.type === 'line' && mapSource.type === 'geojson') {
+                        var lineColor = map.getPaintProperty(id, 'line-color') || '';
 
-                    if (map.getPaintProperty(id, 'line-dasharray')) {
-                        var faClass = "<i class='fa geojson-line-dashed' aria-hidden='true' style='color:"+ lineColor +";'></i>";
-                    } else {
-                        var faClass = "<i class='fa geojson-line-solid' aria-hidden='true' style='color:"+ lineColor +";'></i>";
+                        if (map.getPaintProperty(id, 'line-dasharray')) {
+                            var faClass = "<i class='fa geojson-line-dashed' aria-hidden='true' style='color:"+ lineColor +";'></i>";
+                        } else {
+                            var faClass = "<i class='fa geojson-line-solid' aria-hidden='true' style='color:"+ lineColor +";'></i>";
+                        }
+                    } else if (mapLayer.type === 'circle' && mapSource.type === 'geojson') {
+                        var fillColor = map.getPaintProperty(id, 'circle-color') || '';
+                        var circleOutline = map.getPaintProperty(id, 'circle-stroke-color') || '';
+                        var faClass = "<i class='fa geojson-circle' aria-hidden='true' style='color:"+ fillColor +";-webkit-text-stroke: 1px "+ circleOutline+";'></i>";
                     }
-                } else if (mapLayer.type === 'circle' && mapSource.type === 'geojson') {
-                    var fillColor = map.getPaintProperty(id, 'circle-color') || '';
-                    var circleOutline = map.getPaintProperty(id, 'circle-stroke-color') || '';
-                    var faClass = "<i class='fa geojson-circle' aria-hidden='true' style='color:"+ fillColor +";-webkit-text-stroke: 1px "+ circleOutline+";'></i>";
+                    $(lyrElm + ' span.name').before(faClass);
+                } else {
+                    var imgClass = "<img src='" + obj[0].icon + "' alt='" + obj[0].id + "'>";
+                    $(lyrElm + ' span.name').before(imgClass);
                 }
-                $(lyrElm + ' span.name').before(faClass);
-            } else {
-                var imgClass = "<img src='" + obj[0].icon + "' alt='" + obj[0].id + "'>";
-                $(lyrElm + ' span.name').before(imgClass);
             }
         }
     }
