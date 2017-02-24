@@ -285,6 +285,9 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
                 if (visibility !== 'none') {
                     var grpId = layerGroup[0].id;
                     $('#'+grpId + ' input').prop("checked", true);
+
+                    //toggle ghost class
+                    zoomHandler(id, zoomLevel, grpId);
                 }
             }
         }
@@ -533,9 +536,16 @@ LayerTree.prototype.loadComplete = function(_that, map, sourceCollection) {
         var zoomLevel = map.getZoom();
         var lyrsArray = [];
         for (var i = map.lyrs.length - 1; i >= 0; i--) {
-            var lyrID = map.lyrs[i].id;
-            zoomHandler(lyrID, zoomLevel);
+            // layerGroups need the same min max zoom settings
+            if (map.lyrs[i].hasOwnProperty('layerGroup')) {
+                var lyrID = map.lyrs[i].layerGroup[0].id;
+                var parentID = map.lyrs[i].id;
+            } else {
+                var lyrID = map.lyrs[i].id;
+                parentID = false
+            }
 
+            zoomHandler(lyrID, zoomLevel, parentID);
         }
     }
 
@@ -574,8 +584,12 @@ function findLayerIndex(allLayers, ourLayers, indexVal) {
     return index;
 }
 
-function zoomHandler(lyrID, zoomLevel) {
+function zoomHandler(lyrID, zoomLevel, parentID) {
     var lyr = map.getLayer(lyrID);
+
+    if (parentID) {
+        lyrID = parentID;
+    }
 
     function toggleGhost (g) {
         g === 'off' ? $('#'+lyrID).removeClass('ghost') : $('#'+lyrID).addClass('ghost');
