@@ -83,9 +83,6 @@ LayerTree.prototype.getLayers = function(map) {
 
         if (sourceCollection.length === numSources.length) {
             map.off('sourcedataloading', loadingSource)
-            map.nonCompositeLayers = map.getStyle().layers.filter(function(lyr) {
-                return (lyr.source && lyr.source !== 'composite')
-            })
             //_this.loadBasemaps(map, _this.options.basemaps);
             _this.enableSortHandler(map, _this.loadComplete(_this, map, sourceCollection));
         }
@@ -183,10 +180,8 @@ LayerTree.prototype.loadBasemaps = function(map, basemaps) {
                     };
                 };
             });
-
         });
     };
-
 }
 
 LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
@@ -237,7 +232,6 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
                 map.setLayoutProperty(lyrId, 'visibility', 'none');
             }
         }
-
     });
 
     $('.directory-name').click(function() {
@@ -318,8 +312,10 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
                     }
                     $(lyrElm + ' span.name').before(faClass);
                 } else {
-                    var imgClass = "<img src='" + obj[0].icon + "' alt='" + obj[0].id + "'>";
-                    $(lyrElm + ' span.name').before(imgClass);
+                    if (obj[0].icon !== false) {
+                        var imgClass = "<img src='" + obj[0].icon + "' alt='" + obj[0].id + "'>";
+                        $(lyrElm + ' span.name').before(imgClass);
+                    }
                 }
             } else if (obj[0].hasOwnProperty('layerGroup')) {
                 if (obj[0].hasOwnProperty('icon')) {
@@ -343,8 +339,10 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
                         }
                         $('#' + id + ' span.child-name').before(faClass);
                     } else {
-                        var imgClass = "<img src='" + layerGroup[i].icon + "' alt='" + id + "'>";
-                        $('#' + id + ' span.child-name').before(imgClass);
+                        if (layerGroup[i].icon !== false) {
+                            var imgClass = "<img src='" + layerGroup[i].icon + "' alt='" + id + "'>";
+                            $('#' + id + ' span.child-name').before(imgClass);
+                        }
                     }
                 };
             }
@@ -381,6 +379,7 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
         var legend = $('#mapboxgl-legend');
 
         $.each(layerDirectories, function(i) {
+
             //get the highest index value for each directory
             var highestIndex = $(this).children('.layer-item:first');
             var indexVal = highestIndex.attr('initial-index') * 10;
@@ -424,7 +423,21 @@ LayerTree.prototype.enableSortHandler = function(map) {
                 var layerArray = $('#' + dir).sortable('toArray');
 
                 for (var j = layerArray.length - 1; j >= 0; j--) {
-                    map.moveLayer(layerArray[j]);
+                    var lyr = layerArray[j];
+                    var childLayers = $('#' + lyr).attr('childLayers');
+
+                    if (childLayers !== undefined) {
+                        var children = childLayers.split(',');
+                    }
+
+                    if (children && children.length) {
+                        for (var k = children.length - 1; k >= 0; k--) {
+                            map.moveLayer(children[k]);
+                        };
+                        children = false;
+                    } else {
+                        map.moveLayer(lyr);
+                    }
                 };
             }
         }
@@ -442,32 +455,41 @@ LayerTree.prototype.enableSortHandler = function(map) {
             'bar' is going to show on top of 'foo'
             **/
 
-            var orderArray = [];
-            var newLayerOrder = ui.item.parent().sortable('toArray').reverse();
-
-            var childLayers = ui.item.attr('childLayers');
-            if (childLayers !== undefined) {
-                var children = childLayers.split(',');
-            }
-
-            if (children.length) {
-                var parentLayer = ui.item[0].id;
-                var parentIndexOrder = newLayerOrder.indexOf(parentLayer);
-
-                //insert children layers to original location of parent
-                newLayerOrder.splice.apply(newLayerOrder, [parentIndexOrder, 0].concat(children));
-                var newParentOrder = newLayerOrder.indexOf(parentLayer);
-
-                //remove parent after its order changes
-                newLayerOrder.splice(newParentOrder);
-            }
-
-
             var layers = map.nonCompositeLayers;
+            var orderArray = [];
+            var currentLayerOrder = ui.item.parent().sortable('toArray').reverse();
+
+            // copy array as we're modifying the original array in a for-loop
+            var newLayerOrder = currentLayerOrder.slice(0);
+
+            // check for childLayers and reorder
+            for (var n = currentLayerOrder.length - 1; n >= 0; n--) {
+                var lyr = currentLayerOrder[n];
+                var childLayers = $('#' + lyr).attr('childLayers');
+
+                if (childLayers !== undefined) {
+                    var children = childLayers.split(',').reverse();
+                }
+
+                if (children && children.length) {
+                    var parentIndexOrder = newLayerOrder.indexOf(lyr);
+
+                    // insert children layers to original location of parent
+                    newLayerOrder.splice.apply(newLayerOrder, [parentIndexOrder, 0].concat(children));
+                    var newParentOrder = newLayerOrder.indexOf(lyr);
+
+                    //remove parent after its order changes
+                    newLayerOrder.splice(newParentOrder, 1);
+                    children = false;
+                }
+            }
+
+            // now we have an updated newLayerOrder
             for (var i = newLayerOrder.length - 1; i >= 0; i--) {
+
                 var layerIndex = findLayerIndex(layers, newLayerOrder, i);
 
-                if (layerIndex) {
+                if (layerIndex !== undefined) {
                     var obj = {
                         'originalOrder': layerIndex,
                         'newOrder': i,
@@ -476,7 +498,6 @@ LayerTree.prototype.enableSortHandler = function(map) {
                     }
                     orderArray.push(obj);
                 }
-
             };
 
             //move layer order
@@ -496,6 +517,11 @@ LayerTree.prototype.loadComplete = function(_that, map, sourceCollection) {
 
     var mapLoaded = function() {
         if (map.loaded()) {
+
+            map.nonCompositeLayers = map.getStyle().layers.filter(function(lyr) {
+                return (lyr.source && lyr.source !== 'composite')
+            })
+
             _that.updateLegend(map, sourceCollection, _that.options.layers);
             $('.mapboxgl-ctrl.legend-container').trigger('show');
             $('.mapboxgl-ctrl.legend-container').show();
