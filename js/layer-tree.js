@@ -83,6 +83,9 @@ LayerTree.prototype.getLayers = function(map) {
 
         if (sourceCollection.length === numSources.length) {
             map.off('sourcedataloading', loadingSource)
+            map.nonCompositeLayers = map.getStyle().layers.filter(function(lyr) {
+                return (lyr.source && lyr.source !== 'composite')
+            })
             //_this.loadBasemaps(map, _this.options.basemaps);
             _this.enableSortHandler(map, _this.loadComplete(_this, map, sourceCollection));
         }
@@ -94,7 +97,6 @@ LayerTree.prototype.getLayers = function(map) {
 //callback to append layer to legend
 LayerTree.prototype.appendLayerToLegend = function(map, mapLyrObj, lyr) {
     var legendId = '#mapboxgl-legend';
-
     var directoryName = lyr.directory;
     var directoryId = directoryName.replace(/\s+/g, '-').toLowerCase();
 
@@ -113,6 +115,7 @@ LayerTree.prototype.appendLayerToLegend = function(map, mapLyrObj, lyr) {
 
     //add layer-group class to layerGroup 'layer'
     var inputElm = $('#'+layerId+ ' .toggle-layer');
+    var layerElm = $('#')
     if (lyr.hasOwnProperty('layerGroup') && !inputElm.hasClass('layer-group')) {
         inputElm.addClass('layer-group');
 
@@ -123,6 +126,7 @@ LayerTree.prototype.appendLayerToLegend = function(map, mapLyrObj, lyr) {
             $('#' + layerId).append("<div id='" + childLayers[i].id + "' class='child-layer'><span class='child-name'>" + childLayers[i].name + "</span></div>");
         };
         //add childLayer ids to elm
+        $('#'+layerId).attr('childLayers', childIds);
         inputElm.attr('childLayers', childIds);
     }
 }
@@ -161,7 +165,7 @@ LayerTree.prototype.loadBasemaps = function(map, basemaps) {
             clickedMap.prop('checked', true);
 
             var mapSources = Object.entries(map.getStyle().sources);
-            var mapLayers = map.getStyle().layers;
+            var mapLayers = map.nonCompositeLayers;
 
             map.on('style.load', function() {
                 var keepLayers = [];
@@ -186,7 +190,7 @@ LayerTree.prototype.loadBasemaps = function(map, basemaps) {
 }
 
 LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
-    var layers = map.getStyle().layers;
+    var layers = map.nonCompositeLayers;
     var arrayObj = [];
     var directoryOptions = this.options.directoryOptions
 
@@ -411,7 +415,7 @@ LayerTree.prototype.enableSortHandler = function(map) {
         stop: function(e, ui) {
 
             var orderArray = [];
-            var layers = map.getStyle().layers;
+            var layers = map.nonCompositeLayers;
             var newDirOrder = ui.item.parent().sortable('toArray');
 
             //this loop starts at the directory above the lowest indexed
@@ -440,8 +444,26 @@ LayerTree.prototype.enableSortHandler = function(map) {
 
             var orderArray = [];
             var newLayerOrder = ui.item.parent().sortable('toArray').reverse();
-            var layers = map.getStyle().layers;
 
+            var childLayers = ui.item.attr('childLayers');
+            if (childLayers !== undefined) {
+                var children = childLayers.split(',');
+            }
+
+            if (children.length) {
+                var parentLayer = ui.item[0].id;
+                var parentIndexOrder = newLayerOrder.indexOf(parentLayer);
+
+                //insert children layers to original location of parent
+                newLayerOrder.splice.apply(newLayerOrder, [parentIndexOrder, 0].concat(children));
+                var newParentOrder = newLayerOrder.indexOf(parentLayer);
+
+                //remove parent after its order changes
+                newLayerOrder.splice(newParentOrder);
+            }
+
+
+            var layers = map.nonCompositeLayers;
             for (var i = newLayerOrder.length - 1; i >= 0; i--) {
                 var layerIndex = findLayerIndex(layers, newLayerOrder, i);
 
@@ -500,7 +522,17 @@ function findLayerIndex(allLayers, ourLayers, indexVal) {
     var index = -1;
     for (var i = allLayers.length - 1; i >= 0; i--) {
         if (typeof ourLayers[indexVal] == 'object' && ourLayers[indexVal] !== null) {
-            if (allLayers[i].id === ourLayers[indexVal].id) {
+            //layerGroup logic
+            if (ourLayers[indexVal].hasOwnProperty('layerGroup')) {
+                var lyr = ourLayers[indexVal];
+                for (var j = lyr.layerGroup.length - 1; j >= 0; j--) {
+                    if (allLayers[i].id === lyr.layerGroup[j].id) {
+                        index = i;
+                        break
+                    }
+                };
+            //regular layers
+            } else if (allLayers[i].id === ourLayers[indexVal].id) {
                 index = i;
                 break
             }
@@ -512,6 +544,7 @@ function findLayerIndex(allLayers, ourLayers, indexVal) {
         }
 
     };
+
     return index;
 }
 
@@ -522,7 +555,7 @@ function zoomHandler(lyrID, zoomLevel) {
         g === 'off' ? $('#'+lyrID).removeClass('ghost') : $('#'+lyrID).addClass('ghost');
     }
 
-    if (lyr && lyr.minzoom || lyr.maxzoom && $('#'+ lyrID + ' .toggle-layer').prop('checked')) {
+    if (typeof lyr !== "undefined" && (lyr.minzoom || lyr.maxzoom) && $('#'+ lyrID + ' .toggle-layer').prop('checked')) {
         if (lyr.minzoom && lyr.maxzoom) {
             zoomLevel >= lyr.minzoom && zoomLevel <= lyr.maxzoom ? toggleGhost('off') : toggleGhost('on')
         } else if (lyr.minzoom) {
