@@ -443,6 +443,10 @@ LayerTree.prototype.enableSortHandler = function(map) {
                     }
                 };
             }
+
+            for (var i = 0; i < map.drawingLayers.length; i++) {
+                map.moveLayer(map.drawingLayers[i].id)
+            };
         }
     });
 
@@ -507,10 +511,14 @@ LayerTree.prototype.enableSortHandler = function(map) {
             orderArray.sort(function(a, b) {
                 if (b.newOrder > a.newOrder) {
                     map.moveLayer(a.id, b.id);
-                } else {
+                } else  {
                     map.moveLayer(b.id, a.id);
                 }
             })
+
+            for (var i = 0; i < map.drawingLayers.length; i++) {
+                map.moveLayer(map.drawingLayers[i].id)
+            };
         }
     });
 }
@@ -524,6 +532,14 @@ LayerTree.prototype.loadComplete = function(_that, map, sourceCollection) {
             map.nonCompositeLayers = map.getStyle().layers.filter(function(lyr) {
                 return (lyr.source && lyr.source !== 'composite')
             })
+
+            map.drawingLayers = map.nonCompositeLayers.filter(function(lay) {
+                return (lay.source.indexOf('mapbox-gl-draw') > -1)
+            })
+
+            for (var i = 0; i < map.drawingLayers.length; i++) {
+                map.moveLayer(map.drawingLayers[i].id)
+            };
 
             _that.updateLegend(map, sourceCollection, _that.options.layers);
             $('.mapboxgl-ctrl.legend-container').trigger('show');
