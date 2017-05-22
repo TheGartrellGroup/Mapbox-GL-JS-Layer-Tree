@@ -491,33 +491,16 @@ LayerTree.prototype.enableSortHandler = function(map) {
                 }
             }
 
-            // now we have an updated newLayerOrder
-            for (var i = newLayerOrder.length - 1; i >= 0; i--) {
-
-                var layerIndex = findLayerIndex(layers, newLayerOrder, i);
-
-                if (layerIndex !== undefined) {
-                    var obj = {
-                        'originalOrder': layerIndex,
-                        'newOrder': i,
-                        'id': newLayerOrder[i],
-
-                    }
-                    orderArray.push(obj);
+            // now we have an updated newLayerOrder that we can sort on
+            for (var nl = newLayerOrder.length - 1; nl >= 0; nl--) {
+                if (nl !== 0) {
+                    map.moveLayer(newLayerOrder[nl-1], newLayerOrder[nl])
                 }
             };
 
-            //move layer order
-            orderArray.sort(function(a, b) {
-                if (b.newOrder > a.newOrder) {
-                    map.moveLayer(a.id, b.id);
-                } else  {
-                    map.moveLayer(b.id, a.id);
-                }
-            })
-
-            for (var i = 0; i < map.drawingLayers.length; i++) {
-                map.moveLayer(map.drawingLayers[i].id)
+            // add drawn layers at the top
+            for (var d = 0; d < map.drawingLayers.length; d++) {
+                map.moveLayer(map.drawingLayers[d].id)
             };
         }
     });
