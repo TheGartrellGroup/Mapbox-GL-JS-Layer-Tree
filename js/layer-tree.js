@@ -298,19 +298,7 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
         // layerOnClick option loads
         if (onClickEnabled(map.onClickLoad, lyrSource)) {
             if (visibility !== 'none') {
-                // visible layerGroups
-                if (layerGroup !== undefined) {
-                    var lyG = layerGroup[0].layerGroup;
-                    for (var gr = lyG.length - 1; gr >= 0; gr--) {
-                        var source = map.getSource(lyG[gr].source);
-                        checkSourceOnClick(map, source, lyG[gr].id, layerGroup);
-                    };
-                // visible singular layers
-                } else {
-                    checkSourceOnClick(map, lyrSource, id);
-                }
-
-                // activate visible layers
+                (layerGroup === undefined) ? checkSourceOnClick(map, lyrSource, id) : checkSourceOnClick(map, lyrSource, layerGroup[0].id, id)
                 activateLyrBox(id, lyrElm, layerGroup);
             } else {
                 // ensure layers without visibility have 'checked' = false
@@ -318,7 +306,7 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
             }
         } else {
             // non layerOnClick functionality
-            activateLyrBox(id, visibility, lyrElm, layerGroup);
+            activateLyrBox(id, lyrElm, layerGroup);
         }
 
         function activateLyrBox(id, lyrElm, layerGroup) {
