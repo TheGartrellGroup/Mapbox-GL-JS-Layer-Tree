@@ -211,7 +211,7 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
     $('body').on('click', '.toggle-layer', function() {
         var lyrId = $(this).parent().attr('id');
 
-        //layerGroups
+        // layerGroups
         if ($(this).hasClass('layer-group')) {
             var $input = $(this);
             var childIds = $input.attr('childLayers').split(',');
@@ -220,6 +220,7 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
                 var sourceId = map.getLayer(childIds[i]).source;
                 var lyrSource = map.getSource(sourceId);
 
+                // is the source empty
                 checkSourceOnClick(map, lyrSource, lyrId, childIds[i]);
 
                 if ($input.is(':checked')) {
@@ -228,11 +229,12 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
                     map.setLayoutProperty(childIds[i], 'visibility', 'none');
                 }
             };
-            //regular layers
+            // regular layers
         } else {
             var sourceId = map.getLayer(lyrId).source;
             var lyrSource = map.getSource(sourceId);
 
+            // is the source empty
             checkSourceOnClick(map, lyrSource, lyrId);
 
             if ($(this).is(':checked')) {
@@ -255,7 +257,7 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
 
     sortLoadedDirectories(directoryOptions);
 
-    //sort legends based on initial on layer index
+    // sort legends based on initial on layer index
     function sortLoadedLayers(lyrArray, dir) {
         lyrArray.sort(function(a, b) {
             var aVal = parseInt(a.getAttribute('initial-index')),
@@ -266,7 +268,7 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
         lyrArray.detach().appendTo(dir);
     }
 
-    //activate checkbox if layer is visible and add ghost class if neccessary
+    // activate checkbox if layer is visible and add ghost class if neccessary
     function visible(map, id, lyrElm, lyrs) {
         if (map.getLayer(id) === undefined) {
             //check for layerGroups
@@ -285,6 +287,7 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
         }
     }
 
+    // modify layers visibility and legend checkboxes
     function adjustLayoutProperties(id, lyrElm, layerGroup) {
         var visibility = map.getLayoutProperty(id, 'visibility');
         var zoomLevel = map.getZoom();
@@ -295,12 +298,26 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
         // layerOnClick option loads
         if (onClickEnabled(map.onClickLoad, lyrSource)) {
             if (visibility !== 'none') {
-                checkSourceOnClick(map, lyrSource, id, layerGroup);
+                // visible layerGroups
+                if (layerGroup !== undefined) {
+                    var lyG = layerGroup[0].layerGroup;
+                    for (var gr = lyG.length - 1; gr >= 0; gr--) {
+                        var source = map.getSource(lyG[gr].source);
+                        checkSourceOnClick(map, source, lyG[gr].id, layerGroup);
+                    };
+                // visible singular layers
+                } else {
+                    checkSourceOnClick(map, lyrSource, id);
+                }
+
+                // activate visible layers
                 activateLyrBox(id, lyrElm, layerGroup);
             } else {
+                // ensure layers without visibility have 'checked' = false
                 (layerGroup === undefined) ? $(lyrElm + ' input').prop("checked", false) : $('#' + layerGroup[0].id + ' input').prop("checked", false);
             }
         } else {
+            // non layerOnClick functionality
             activateLyrBox(id, visibility, lyrElm, layerGroup);
         }
 
@@ -332,25 +349,25 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
             });
 
             if (ly.length) {
-                //layerGroup
+                // layerGroup
                 if (lgId) {
                     var lgLy = $.grep(ly[0].layerGroup, function(i) {
                         return lgId === i.id;
                     });
 
-                    //set empty sources with defined path from layer config
+                    // set empty sources with defined path from layer config
                     map.getSource(lyrSource.id).setData(lgLy[0].path);
 
-                    //regular layers
+                    // non grouped layers
                 } else {
-                    //set empty sources with defined path from layer config
+                    // set empty sources with defined path from layer config
                     map.getSource(lyrSource.id).setData(ly[0].path)
                 }
             }
         }
     }
 
-    //assign legend icons
+    // assign legend icons
     function addIcons(map, id, lyrs, lyrElm) {
         var obj = $.grep(lyrs, function(i) {
             return id === i.id;
@@ -361,7 +378,7 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
             if (mapLayer !== undefined) {
                 var mapSource = map.getSource(obj[0].source);
 
-                //is there a default icon in the config?
+                // is there a default icon in the config?
                 if (!obj[0].hasOwnProperty('icon')) {
                     if (mapLayer.type === 'fill' && mapSource.type === 'geojson') {
                         var faClass = geojsonFill(id);
@@ -432,7 +449,7 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
         }
     }
 
-    //sort initial loading of directories
+    // sort initial loading of directories
     function sortLoadedDirectories(directoryOptions) {
         var directoryOptions = directoryOptions
         var layerDirectories = $('.layer-directory');
@@ -440,14 +457,14 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
 
         $.each(layerDirectories, function(i) {
 
-            //get the highest index value for each directory
+            // get the highest index value for each directory
             var highestIndex = $(this).children('.layer-item:first');
             var indexVal = highestIndex.attr('initial-index') * 10;
 
-            //apply value to directory
+            // apply value to directory
             $(this).attr('initial-index', indexVal);
 
-            //initial toggle open or close of directory
+            // initial toggle open or close of directory
             if (directoryOptions && directoryOptions.length) {
                 var dirId = this.id
                 var dir = $.grep(directoryOptions, function(i) {
@@ -466,9 +483,9 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
 
 }
 
-//callback to activate jquery-ui-sortable
+// callback to activate jquery-ui-sortable
 LayerTree.prototype.enableSortHandler = function(map) {
-    //sortable directories
+    // sortable directories
     $('#mapboxgl-legend').sortable({
         items: '.layer-directory',
         stop: function(e, ui) {
@@ -563,7 +580,7 @@ LayerTree.prototype.enableSortHandler = function(map) {
     });
 }
 
-//callback to check if map is loaded
+// callback to check if map is loaded
 LayerTree.prototype.loadComplete = function(_that, map, sourceCollection) {
 
     var mapLoaded = function() {
@@ -664,7 +681,7 @@ function zoomHandler(lyrID, zoomLevel, parentID) {
     }
 }
 
-//check for onClickLoad param and if data is actually empty
+// check for onClickLoad param and if data is actually empty
 function onClickEnabled(onClickLoad, lyrSource) {
     return onClickLoad && (((lyrSource._data.hasOwnProperty('features') && lyrSource._data.features.length === 0) || lyrSource._data === '' || lyrSource._data === []))
 }
