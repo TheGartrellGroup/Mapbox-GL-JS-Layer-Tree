@@ -220,7 +220,7 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
                 var sourceId = map.getLayer(childIds[i]).source;
                 var lyrSource = map.getSource(sourceId);
 
-                checkSourceOnClick(map, lyrSource, childIds[i]);
+                checkSourceOnClick(map, lyrSource, lyrId, childIds[i]);
 
                 if ($input.is(':checked')) {
                     map.setLayoutProperty(childIds[i], 'visibility', 'visible');
@@ -233,7 +233,7 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
             var sourceId = map.getLayer(lyrId).source;
             var lyrSource = map.getSource(sourceId);
 
-            checkSourceOnClick(map, lyrSource);
+            checkSourceOnClick(map, lyrSource, lyrId);
 
             if ($(this).is(':checked')) {
                 map.setLayoutProperty(lyrId, 'visibility', 'visible');
@@ -244,32 +244,6 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
                 })
             } else {
                 map.setLayoutProperty(lyrId, 'visibility', 'none');
-            }
-        }
-
-        // check if source has already been loaded on click
-        function checkSourceOnClick(map, lyrSource, lgId) {
-            if (onClickEnabled(map.onClickLoad, lyrSource, lgId)) {
-                var ly = $.grep(map.lyrs, function(i) {
-                    return lyrId === i.id;
-                });
-
-                if (ly.length) {
-                    //layerGroup
-                    if (lgId) {
-                        var lgLy = $.grep(ly[0].layerGroup, function(i) {
-                            return lgId === i.id;
-                        });
-
-                        //set empty sources with defined path from layer config
-                        map.getSource(sourceId).setData(lgLy[0].path);
-
-                        //regular layers
-                    } else {
-                        //set empty sources with defined path from layer config
-                        map.getSource(sourceId).setData(ly[0].path)
-                    }
-                }
             }
         }
     });
@@ -320,8 +294,17 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
 
         // layerOnClick option loads
         if (onClickEnabled(map.onClickLoad, lyrSource)) {
-            (layerGroup === undefined) ? $(lyrElm + ' input').prop("checked", false) : $('#' + layerGroup[0].id + ' input').prop("checked", false)
+            if (visibility !== 'none') {
+                checkSourceOnClick(map, lyrSource, id, layerGroup);
+                activateLyrBox(id, lyrElm, layerGroup);
+            } else {
+                (layerGroup === undefined) ? $(lyrElm + ' input').prop("checked", false) : $('#' + layerGroup[0].id + ' input').prop("checked", false);
+            }
         } else {
+            activateLyrBox(id, visibility, lyrElm, layerGroup);
+        }
+
+        function activateLyrBox(id, lyrElm, layerGroup) {
             if (layerGroup === undefined) {
                 if (visibility !== 'none') {
                     $(lyrElm + ' input').prop("checked", true);
@@ -335,6 +318,33 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
 
                     //toggle ghost class
                     zoomHandler(id, zoomLevel, grpId);
+                }
+            }
+        }
+    }
+
+    // check if source has already been loaded on click
+    function checkSourceOnClick(map, lyrSource, lyrId, lgId) {
+        if (onClickEnabled(map.onClickLoad, lyrSource, lgId)) {
+
+            var ly = $.grep(map.lyrs, function(i) {
+                return lyrId === i.id;
+            });
+
+            if (ly.length) {
+                //layerGroup
+                if (lgId) {
+                    var lgLy = $.grep(ly[0].layerGroup, function(i) {
+                        return lgId === i.id;
+                    });
+
+                    //set empty sources with defined path from layer config
+                    map.getSource(lyrSource.id).setData(lgLy[0].path);
+
+                    //regular layers
+                } else {
+                    //set empty sources with defined path from layer config
+                    map.getSource(lyrSource.id).setData(ly[0].path)
                 }
             }
         }
