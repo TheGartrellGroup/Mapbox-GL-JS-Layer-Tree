@@ -34,11 +34,13 @@ LayerTree.prototype.onRemove = function() {
 LayerTree.prototype.getLayers = function(map) {
     var _this = this;
     var layers = _this.options.layers;
+    var onClickLoad = _this.options.hasOwnProperty('onClickLoad') ? _this.options.onClickLoad : false;
     var sourceCollection = _this.sources;
     var numSources = [];
 
     map.sourceCollection = sourceCollection;
     map.lyrs = layers;
+    map.onClickLoad = onClickLoad;
 
     for (var s = layers.length - 1; s >= 0; s--) {
         if (layers[s].hasOwnProperty('source') && $.inArray(layers[s].source, numSources) === -1) {
@@ -185,9 +187,11 @@ LayerTree.prototype.loadBasemaps = function(map, basemaps) {
 }
 
 LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
+    var _this = this;
     var layers = map.nonCompositeLayers;
+
     var arrayObj = [];
-    var directoryOptions = this.options.directoryOptions
+    var directoryOptions = _this.options.directoryOptions;
 
     //update legend once layers are fully loaded
     for (var i = lyrs.length - 1; i >= 0; i--) {
@@ -195,8 +199,8 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
         var lyrElm = '#' + id;
         var dir = $(lyrElm).parent('.layer-directory');
         var lyrArray = dir.children('.layer-item');
-
         var layerIndex = findLayerIndex(layers, lyrs, i);
+
         $(lyrElm).attr('initial-index', layerIndex);
 
         sortLoadedLayers(lyrArray, dir);
@@ -207,20 +211,30 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
     $('body').on('click', '.toggle-layer', function() {
         var lyrId = $(this).parent().attr('id');
 
-
         //layerGroups
         if ($(this).hasClass('layer-group')) {
             var $input = $(this);
             var childIds = $input.attr('childLayers').split(',');
+
             for (var i = childIds.length - 1; i >= 0; i--) {
+                var sourceId = map.getLayer(childIds[i]).source;
+                var lyrSource = map.getSource(sourceId);
+
+                checkSourceOnClick(map, lyrSource, childIds[i]);
+
                 if ($input.is(':checked')) {
                     map.setLayoutProperty(childIds[i], 'visibility', 'visible');
                 } else {
                     map.setLayoutProperty(childIds[i], 'visibility', 'none');
                 }
             };
-        //regular layers
+            //regular layers
         } else {
+            var sourceId = map.getLayer(lyrId).source;
+            var lyrSource = map.getSource(sourceId);
+
+            checkSourceOnClick(map, lyrSource);
+
             if ($(this).is(':checked')) {
                 map.setLayoutProperty(lyrId, 'visibility', 'visible');
 
@@ -230,6 +244,32 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
                 })
             } else {
                 map.setLayoutProperty(lyrId, 'visibility', 'none');
+            }
+        }
+
+        // check if source has already been loaded on click
+        function checkSourceOnClick(map, lyrSource, lgId) {
+            if (onClickEnabled(map.onClickLoad, lyrSource, lgId)) {
+                var ly = $.grep(map.lyrs, function(i) {
+                    return lyrId === i.id;
+                });
+
+                if (ly.length) {
+                    //layerGroup
+                    if (lgId) {
+                        var lgLy = $.grep(ly[0].layerGroup, function(i) {
+                            return lgId === i.id;
+                        });
+
+                        //set empty sources with defined path from layer config
+                        map.getSource(sourceId).setData(lgLy[0].path);
+
+                        //regular layers
+                    } else {
+                        //set empty sources with defined path from layer config
+                        map.getSource(sourceId).setData(ly[0].path)
+                    }
+                }
             }
         }
     });
@@ -261,21 +301,28 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
             });
 
             if (layerGroup.length) {
-                var lyrGroup = layerGroup[0].layerGroup;
-                for (var i = lyrGroup.length - 1; i >= 0; i--) {
-                    adjustLayoutProperties(lyrGroup[i].id, lyrElm, layerGroup);
+                var lyrsInGroup = layerGroup[0].layerGroup;
+                for (var i = lyrsInGroup.length - 1; i >= 0; i--) {
+                    adjustLayoutProperties(lyrsInGroup[i].id, lyrElm, layerGroup);
                 }
             }
         } else {
             adjustLayoutProperties(id, lyrElm);
         }
+    }
 
-        function adjustLayoutProperties(id, lyrElm, layerGroup) {
-            var visibility = map.getLayoutProperty(id, 'visibility');
-            var zoomLevel = map.getZoom();
+    function adjustLayoutProperties(id, lyrElm, layerGroup) {
+        var visibility = map.getLayoutProperty(id, 'visibility');
+        var zoomLevel = map.getZoom();
 
+        var sourceId = map.getLayer(id).source;
+        var lyrSource = map.getSource(sourceId);
 
-            if (lyrGroup === undefined) {
+        // layerOnClick option loads
+        if (onClickEnabled(map.onClickLoad, lyrSource)) {
+            (layerGroup === undefined) ? $(lyrElm + ' input').prop("checked", false) : $('#' + layerGroup[0].id + ' input').prop("checked", false)
+        } else {
+            if (layerGroup === undefined) {
                 if (visibility !== 'none') {
                     $(lyrElm + ' input').prop("checked", true);
                 }
@@ -284,7 +331,7 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
             } else {
                 if (visibility !== 'none') {
                     var grpId = layerGroup[0].id;
-                    $('#'+grpId + ' input').prop("checked", true);
+                    $('#' + grpId + ' input').prop("checked", true);
 
                     //toggle ghost class
                     zoomHandler(id, zoomLevel, grpId);
@@ -606,3 +653,9 @@ function zoomHandler(lyrID, zoomLevel, parentID) {
         }
     }
 }
+
+//check for onClickLoad param and if data is actually empty
+function onClickEnabled(onClickLoad, lyrSource) {
+    return onClickLoad && (((lyrSource._data.hasOwnProperty('features') && lyrSource._data.features.length === 0) || lyrSource._data === '' || lyrSource._data === []))
+}
+
