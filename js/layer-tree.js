@@ -669,8 +669,12 @@ function zoomHandler(lyrID, zoomLevel, parentID) {
     }
 }
 
-// check for onClickLoad param and if data is actually empty
+// check for geojson onClickLoad param and if data is actually empty
 function onClickEnabled(onClickLoad, lyrSource) {
-    return onClickLoad && (((lyrSource._data.hasOwnProperty('features') && lyrSource._data.features.length === 0) || lyrSource._data === '' || lyrSource._data === []))
+    if (onClickLoad && lyrSource.type === 'geojson' && lyrSource.hasOwnProperty('_data')) {
+        if ((lyrSource._data.hasOwnProperty('features') && lyrSource._data.features.length === 0) || lyrSource._data === '' || lyrSource._data === []) {
+            return true
+        }
+    }
 }
 
