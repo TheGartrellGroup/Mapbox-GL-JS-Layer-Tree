@@ -73,7 +73,9 @@
         ];
      ```
      ##### onClickLoad (optional)
-     Since the Layer Tree is populated within `map.on('load', function()`, *mapLayers* and *mapSources* are added inside the event listener. Often times, may want to load layers only on 'click'. To account for this (*geojson only*), users will need to initially setup their layers sources with empty featureCollections. The `onClickLoad` param also needs to be added to LayerTree control and must be set to `true`. If a geojson layer has a layout visibility not set to 'none' - the Layer Tree will behave as it normally would - where the layer will be activated and shown on map load.
+     Since the Layer Tree is populated within `map.on('load', function()`, *mapLayers* and *mapSources* are added inside the event listener. Often times, may want to load layers only on 'click'. To account for this (*geojson only*), users will need to initially setup their layers sources with empty featureCollections. The `onClickLoad` param also needs to be added to LayerTree control and must be set to `true`. If a geojson layer has a layout visibility not set to 'none' - the Layer Tree will behave as it normally would - where the layer will be activated and shown on map load. 
+     
+     Example js setup [here](https://github.com/TheGartrellGroup/Mapbox-GL-JS-Layer-Tree/blob/master/js/onClickLoad-example.js)
 
     ```javascript
     // **** EMPTY GEOJSON PLACEHOLDER ****
