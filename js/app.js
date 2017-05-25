@@ -2,12 +2,27 @@ mapboxgl.accessToken = '';
 
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/streets-v9',
-    center: [-95.9980, 41.2524],
-    zoom: 4
+    style: 'mapbox://styles/mapbox/light-v9',
+    center: [-75, 15],
+    zoom: 2
 });
 
-map.on('load', function () {
+
+map.on('load', function() {
+
+    map.addSource('geo-regions', { type: 'geojson', data: 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_geography_regions_polys.geojson' });
+    map.addLayer({
+        "id": "geo-regions",
+        "type": "fill",
+        "source": "geo-regions",
+        "layout": {
+            "visibility": 'visible'
+        },
+        "paint": {
+            'fill-color': '#4842f4',
+            'fill-opacity': 0.3
+        }
+    });
 
     map.addSource('land', { type: 'geojson', data: 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_land.geojson' });
     map.addLayer({
@@ -18,132 +33,148 @@ map.on('load', function () {
             "visibility": 'visible'
         },
         "paint": {
-            'fill-color': '#a89b97',
+            'fill-color': '#e0d4b8',
             'fill-opacity': 0.8
         }
     });
 
-    map.addSource('state-boundaries', { type: 'geojson', data: 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_admin_1_states_provinces_shp.geojson' });
+    map.addSource('glacial', { type: 'geojson', data: 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_glaciated_areas.geojson' });
     map.addLayer({
-        "id": "state-boundaries",
+        "id": "glaciers",
         "type": "fill",
-        "source": "state-boundaries",
+        "source": "glacial",
         "layout": {
             "visibility": 'visible'
         },
         "paint": {
-            'fill-color': '#CEE5C2',
-            'fill-opacity': 0.8,
-            'fill-outline-color': '#2b2424'
+            'fill-color': '#b8dae0',
+            'fill-opacity': 1
         }
     });
 
-    map.addSource('elevation', { type: 'geojson', data: 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_geography_regions_elevation_points.geojson' });
+    map.addSource('reefs', { type: 'geojson', data: 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_10m_reefs.geojson' });
     map.addLayer({
-        "id": "elevation-points",
-        "type": "circle",
-        "source": "elevation",
-        "layout": {
-            "visibility": 'visible'
-        },
-        "paint": {
-            'circle-color': '#eae00b',
-            'circle-opacity': 0.8,
-            'circle-stroke-color': '#2b2424',
-            'circle-stroke-width': 1
-        }
-    });
-
-
-    map.addSource('railroads', { 'type': 'geojson', 'data': 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_10m_railroads_north_america.geojson'});
-    map.addLayer({
-        "id": "railroads",
+        "id": "reefs",
         "type": "line",
-        "source": "railroads",
+        "source": "reefs",
+        "paint": {
+            "line-color": "#f45353",
+            "line-width": 2
+        }
+    });
+
+    map.addSource('rivers', { type: 'geojson', data: 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_rivers_lake_centerlines_scale_rank.geojson' });
+    map.addLayer({
+        "id": "rivers",
+        "type": "line",
+        "source": "rivers",
         "layout": {
             'visibility': 'visible'
         },
         "paint": {
-            "line-color": "#c7515f",
-            "line-width": 3,
-            "line-dasharray": [4,4],
+            "line-color": "#4177f4",
+            "line-width": 2,
+            "line-dasharray": [4, 4],
         }
     });
 
+    map.addSource('boundary', { type: 'geojson', data: 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_admin_0_boundary_lines_land.geojson' });
+    map.addLayer({
+        "id": "boundary-line",
+        "type": "line",
+        "source": "boundary",
+        "paint": {
+            "line-color": "#e07a14",
+            "line-width": 3,
+            "line-dasharray": [2, 2],
+        }
+    });
+
+
+    map.addSource('ports', { type: 'geojson', data: 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_10m_ports.geojson' });
+    map.addLayer({
+        "id": "port",
+        "type": "circle",
+        "source": "ports",
+        "paint": {
+            'circle-color': '#35a045',
+            'circle-opacity': 0.8,
+            'circle-stroke-color': '#000',
+            'circle-stroke-width': 1
+        }
+    });
+
+    map.setFilter('port', ['<', 'natlscale', 6]);
+
     map.addSource('airports', { type: 'geojson', data: 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_10m_airports.geojson' });
     map.addLayer({
-        "id": "airports",
+        "id": "airport",
         "type": "symbol",
         "source": "airports",
         "layout": {
-            "visibility": 'visible',
-            'icon-image': 'airport-11'
-
+            "icon-image": "airport-11"
         },
-        "paint": {}
+        "paint": {
+            "icon-color": '#0dd224',
+            "icon-halo-color": "#0dd224"
+        }
     });
+})
 
-});
 
 var layers =
-[
-    {
+
+    [{
+        'name': 'Geographic Regions',
+        'id': 'geo-regions',
+        'source': 'geo-regions',
+        'directory': 'Misc',
+    }, {
         'name': 'Land',
         'id': 'land',
         'source': 'land',
-        'directory': 'Misc',
-    },
-    {
-        'name': 'State Boundaries',
-        'id': 'state-boundaries',
-        'source': "state-boundaries",
-        'directory': 'Misc',
-    },
-    {
-        'name': 'Elevated Points',
-        'id': 'elevation-points',
-        'source': 'elevation',
-        'directory': 'Misc',
-    },
-    {
-        'name': 'Railroads',
-        'id': 'railroads',
-        'source': 'railroads',
-        'directory': 'Transportation',
-    },
-    {
-        'name': 'Airports',
-        'id': 'airports',
-        'source': 'airports',
-        'directory': 'Transportation',
-        'icon': 'icons/airplane.svg'
-    },
+        'directory': 'Natural',
+    }, {
+        'name': 'Glaciers',
+        'id': 'glaciers',
+        'source': 'glacial',
+        'directory': 'Natural',
+    }, {
+        'name': 'Reef Boundaries',
+        'id': 'reefs',
+        'source': 'reefs',
+        'directory': 'Natural',
+    }, {
+        'name': 'Rivers',
+        'id': 'rivers',
+        'source': 'rivers',
+        'directory': 'Natural',
+    }, {
+        'name': 'Boundary Lines',
+        'id': 'boundary-line',
+        'source': 'boundary',
+        'directory': 'Travel',
+    }, {
+        'name': 'Points',
+        'id': 'travel-group',
+        'layerGroup': [{
+            'id': 'port',
+            'source': 'ports',
+            'name': 'Major Shipping Ports'
+        }, {
+            'id': 'airport',
+            'source': 'airports',
+            'name': 'Airports',
+            'icon': '../icons/airplane.svg'
+        }, ],
+        'directory': 'Travel'
+    }];
 
-];
-
-// var basemaps =
-// [
-//     {
-//         'name': 'Streets',
-//         'id': 'streets',
-//         'source': 'mapbox://styles/mapbox/streets-v9',
-//         'directory': 'Base Maps',
-//     },
-//     {
-//         'name': 'Basic',
-//         'id': 'basic',
-//         'source': 'mapbox://styles/mapbox/basic-v9',
-//         'directory': 'Base Maps',
-//     },
-//     {
-//         'name': 'Bright',
-//         'id': 'bright',
-//         'source': 'mapbox://styles/mapbox/light-v9',
-//         'directory': 'Base Maps',
-//     }
-
-// ];
+var directoryOptions = [{ 'name': 'Travel', 'open': false }]
 
 // Add zoom and rotation controls to the map.
 map.addControl(new mapboxgl.NavigationControl());
-map.addControl(new LayerTree({layers: layers}), 'bottom-left');
+map.addControl(new LayerTree({
+    layers: layers,
+    directoryOptions: directoryOptions
+}), 'bottom-left');
