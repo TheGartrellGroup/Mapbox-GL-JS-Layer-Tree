@@ -297,7 +297,10 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
 
         // layerOnClick option loads
         if (onClickEnabled(map.onClickLoad, lyrSource)) {
-            if (visibility !== 'none') {
+            //conditional for save view functionality - https://github.com/TheGartrellGroup/Mapbox-GL-JS-save-view
+            if (location.hash !== '' && location.hash.indexOf('#') > -1 && location.hash.length > 6) {
+                return
+            } else if (visibility !== 'none') {
                 (layerGroup === undefined) ? checkSourceOnClick(map, lyrSource, id) : checkSourceOnClick(map, lyrSource, layerGroup[0].id, id)
                 activateLyrBox(id, lyrElm, layerGroup);
             } else {
