@@ -381,6 +381,7 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
                 }
             } else if (obj[0].hasOwnProperty('layerGroup')) {
                 var group = obj[0],
+                    hideLabel = false,
                     iconLayer = false;
 
                 if (group.hasOwnProperty('icon') && group.icon !== '') {
@@ -393,6 +394,10 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
                     } else {
                         iconLayer = group.icon;
                     }
+                }
+
+                if (group.hasOwnProperty('hideLabel') && Array.isArray(group.hideLabel) && group.hideLabel.length > 0) {
+                    hideLabel = true;
                 }
 
                 var layerGroup = group.layerGroup;
@@ -418,14 +423,12 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
                             $('#' + id + ' span.child-name').before(imgClass);
                         }
                     }
-                };
 
-                //hide legend labels
-                if (group.hasOwnProperty('hideLabel') && Array.isArray(group.hideLabel) && group.hideLabel.length > 0) {
-                    for (var h = group.hideLabel.length - 1; h >= 0; h--) {
-                        $('#' + group.hideLabel[h]).hide();
-                    };
-                }
+                    //hide legend labels
+                    if (hideLabel && group.hideLabel.indexOf(id) > -1) {
+                        $('#'+id).hide();
+                    }
+                };
             }
         }
 
