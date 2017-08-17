@@ -371,13 +371,7 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
 
                 // is there a default icon in the config?
                 if (!obj[0].hasOwnProperty('icon')) {
-                    if (mapLayer.type === 'fill' && mapSource.type === 'geojson') {
-                        var faClass = geojsonFill(id);
-                    } else if (mapLayer.type === 'line' && mapSource.type === 'geojson') {
-                        var faClass = geojsonLine(id);
-                    } else if (mapLayer.type === 'circle' && mapSource.type === 'geojson') {
-                        var faClass = geojsonCircle(id);
-                    }
+                    var faClass = createFaClass(mapLayer);
                     $(lyrElm + ' span.name').before(faClass);
                 } else {
                     if (obj[0].icon !== false) {
@@ -386,25 +380,37 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
                     }
                 }
             } else if (obj[0].hasOwnProperty('layerGroup')) {
-                if (obj[0].hasOwnProperty('icon')) {
-                    var imgClass = "<img src='" + obj[0].icon + "' alt='" + obj[0].id + "'>";
-                    $(lyrElm + ' span.name').before(imgClass);
+                var group = obj[0],
+                    iconLayer = false;
+
+                if (group.hasOwnProperty('icon') && group.icon !== '') {
+                    //does this path end in an image type?
+                    var imgPath = (/\.(gif|jpe?g|tiff|png|svg)$/i).test(group.icon);
+
+                    if (imgPath) {
+                        var imgClass = "<img src='" + group.icon + "' alt='" + group.id + "'>";
+                        $(lyrElm + ' span.name').before(imgClass);
+                    } else {
+                        iconLayer = group.icon;
+                    }
                 }
 
-                var layerGroup = obj[0].layerGroup;
+                var layerGroup = group.layerGroup;
+
                 for (var i = 0; i < layerGroup.length; i++) {
+
                     var mapSource = map.getSource(layerGroup[i].source);
                     var id = layerGroup[i].id;
                     var mapLayer = map.getLayer(id);
 
+                    //users may want childLayer symbology to be the parent layer icon
+                    if (iconLayer  && iconLayer === mapLayer.id) {
+                        var faClass = createFaClass(mapLayer);
+                        $(lyrElm + ' span.name').before(faClass);
+                    }
+
                     if (!layerGroup[i].hasOwnProperty('icon')) {
-                        if (mapLayer.type === 'fill' && mapSource.type === 'geojson') {
-                            var faClass = geojsonFill(id);
-                        } else if (mapLayer.type === 'line' && mapSource.type === 'geojson') {
-                            var faClass = geojsonLine(id);
-                        } else if (mapLayer.type === 'circle' && mapSource.type === 'geojson') {
-                            var faClass = geojsonCircle(id);
-                        }
+                        var faClass = createFaClass(mapLayer);
                         $('#' + id + ' span.child-name').before(faClass);
                     } else {
                         if (layerGroup[i].icon !== false) {
@@ -413,6 +419,23 @@ LayerTree.prototype.updateLegend = function(map, sourceCollection, lyrs) {
                         }
                     }
                 };
+
+                //hide legend labels
+                if (group.hasOwnProperty('hideLabel') && Array.isArray(group.hideLabel) && group.hideLabel.length > 0) {
+                    for (var h = group.hideLabel.length - 1; h >= 0; h--) {
+                        $('#' + group.hideLabel[h]).hide();
+                    };
+                }
+            }
+        }
+
+        function createFaClass(mapLayer) {
+            if (mapLayer.type === 'fill' && mapSource.type === 'geojson') {
+                return geojsonFill(id);
+            } else if (mapLayer.type === 'line' && mapSource.type === 'geojson') {
+                return geojsonLine(id);
+            } else if (mapLayer.type === 'circle' && mapSource.type === 'geojson') {
+                return geojsonCircle(id);
             }
         }
 
