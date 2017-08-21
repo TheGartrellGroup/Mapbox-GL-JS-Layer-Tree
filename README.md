@@ -21,8 +21,9 @@
     - **id** - layer id
     - **source** - layer source
     - **directory** - directory where the layer is apart of
-    - **icon** (optional) - path to img src and is solely reflected in the Layer Tree legend - does not modify the symbology of a layer
+    - **icon** (optional) - path to img src and is solely reflected in the Layer Tree legend.  It does not modify the symbology of a layer. Additionally, in a group layer object configuration - the icon param can inherit a child layer's default icon style - via the child layer's ID.
     - **path** (optional) - references source path for geojson and is *only* used in conjunction with onClickLoad param (see further below)
+    - **hideLabel** (optional - group layer only) - in a group layer object configuration, this can be used to hide specific child layers from the Layer Tree by using an array of child layer IDs.
 
      ```javascript
     var lyrArray =
@@ -55,6 +56,8 @@
              {
                  'name': 'Points',
                  'id': 'travel-group',
+                 'icon': 'port',
+                 'hideLabel': ['port', 'airport'],
                  'layerGroup' : [
                      {
                          'id': 'port',
@@ -64,8 +67,7 @@
                      {
                          'id': 'airport',
                          'source': 'airports',
-                         'name': 'Airports',
-                         'icon': '../local/path.svg'
+                         'name': 'Airports'
                      },
                  ],
                  'directory': 'Travel'
