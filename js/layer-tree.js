@@ -114,7 +114,7 @@ LayerTree.prototype.appendLayerToLegend = function(map, mapLyrObj, lyr) {
 
     //add layer-group class to layerGroup 'layer'
     var inputElm = $('#'+layerId+ ' .toggle-layer');
-    var layerElm = $('#')
+
     if (lyr.hasOwnProperty('layerGroup') && !inputElm.hasClass('layer-group')) {
         inputElm.addClass('layer-group');
 

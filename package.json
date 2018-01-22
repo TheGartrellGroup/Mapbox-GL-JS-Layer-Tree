@@ -13,7 +13,7 @@
     "gulp-concat": "^2.6.1",
     "gulp-uglify": "^2.0.1",
     "gulp-webserver": "^0.9.1",
-    "jquery": "2.2.4",
-    "mapbox-gl": "^0.32.1"
+    "jquery": "^3.3.1",
+    "mapbox-gl": "^0.43.0"
   }
 }
